@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Linq;
+using System.Net.WebSockets;
 
 namespace Monogame.Platformer.Engine.Model
 {
@@ -13,8 +14,8 @@ namespace Monogame.Platformer.Engine.Model
         private Boolean _onGround = false;
         private float _gravity = 600;
         private Point _lastPosAdjustment;
-        private Point _lastPosition;
-        private Boolean _hitRoof;
+        private Rectangle _lastPosition;
+        private Boolean _jumpIsDisabled;
 
         public Player(Point startLocation, Map tmxMap)
         {
@@ -28,7 +29,7 @@ namespace Monogame.Platformer.Engine.Model
         public void Update(float elapsedTime, KeyboardState keyboardState)
         {
             Gravity = _onGround ? 0 : _gravity;
-            _lastPosition = new Point(PlayerBounds.X, PlayerBounds.Y);
+            _lastPosition = PlayerBounds;
                       
             var direction = GetDirection(keyboardState);  
             Velocity = CalculateMoveVelocity(Velocity, direction, Speed, elapsedTime);
@@ -53,14 +54,15 @@ namespace Monogame.Platformer.Engine.Model
 
             foreach (var collisionRect in collisionRects)
             {
-                var isGroundCollision = _lastPosition.Y < collisionRect.Bounds.Top && PlayerBounds.Y <= collisionRect.Bounds.Top;
-                var isRoofCollision = _lastPosition.Y > collisionRect.Bounds.Bottom && PlayerBounds.Y <= collisionRect.Bounds.Bottom;
+                var isGroundCollision = _lastPosition.Bottom <= collisionRect.Bounds.Top && PlayerBounds.Bottom >= collisionRect.Bounds.Top;
+                var isRoofCollision = _lastPosition.Top >= collisionRect.Bounds.Bottom && PlayerBounds.Top <= collisionRect.Bounds.Bottom;
+                var isRightCollision = _lastPosition.Right <= collisionRect.Bounds.Left && PlayerBounds.Right >= collisionRect.Bounds.Left;
+                var isLeftCollision = _lastPosition.Left >= collisionRect.Bounds.Right && PlayerBounds.Left <= collisionRect.Bounds.Right;
 
                 if (isGroundCollision && !_onGround)
                 {
                     SetPosition(_lastPosition.X, collisionRect.Bounds.Top - PlayerBounds.Height);
                     _onGround = true;
-                    _hitRoof = false;
                     _lastPosAdjustment = GetPosition();
 
                     if (Velocity.Y > 0)
@@ -74,29 +76,28 @@ namespace Monogame.Platformer.Engine.Model
                     Velocity.Y = 0;
                     SetPosition(_lastPosition.X, collisionRect.Bounds.Bottom);
                 }
-                //var isRightCollision = (PlayerBounds.Right >= collisionRect.Bounds.Left) && collisionRect.Bounds.Top < PlayerBounds.Bottom;
-
-                //if (isRightCollision)
-                //{
-                //    PlayerBounds.X = collisionRect.Bounds.Left - PlayerBounds.Width;
-                //    _lastPosAdjustment.X = PlayerBounds.X;
-
-                //    if (PlayerBounds.Bottom < collisionRect.Bounds.Bottom)
-                //    {
-                //        Velocity.Y = 0;
-                //    }
-
-                //}
+                else if (isRightCollision)
+                {
+                    PlayerBounds.X = collisionRect.Bounds.Left - PlayerBounds.Width;
+                    _lastPosAdjustment.X = PlayerBounds.X;
+                }
+                else if (isLeftCollision)
+                {
+                    PlayerBounds.X = collisionRect.Bounds.Right;
+                    _lastPosAdjustment.X = PlayerBounds.X;
+                }
             }
             //}
 
             var positionAdjustedForGround = !collisionRects.Any() && _lastPosAdjustment.Y == PlayerBounds.Y;
-            var noGroundDetected = !collisionRectsInflateOne.Any();
+            var noGroundDetected = !collisionRectsInflateOne.Any(x => x.Bounds.Top >= PlayerBounds.Bottom);
 
             if (positionAdjustedForGround && noGroundDetected)
             {
                 _onGround = false;
             }
+
+            //_jumpIsDisabled = collisionRectsInflateOne.Any(x => (x.Bounds.Bottom == PlayerBounds.Top + 1)); // Object bottom is colliding.
         }
 
 
@@ -106,7 +107,7 @@ namespace Monogame.Platformer.Engine.Model
             newVelocity.X = speed.X * direction.X;
             newVelocity.Y += Gravity * elapsedTime;
 
-            if (direction.Y == -1f && !_hitRoof)
+            if (direction.Y == -1f && !_jumpIsDisabled)
             {
                 newVelocity.Y = speed.Y * direction.Y;
                 _onGround = false;

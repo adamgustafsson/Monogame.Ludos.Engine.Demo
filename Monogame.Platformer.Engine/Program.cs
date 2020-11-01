@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Monogame.Platformer.Engine.Controller;
+using System;
 
 namespace Monogame.Platformer.Engine
 {
@@ -7,8 +8,10 @@ namespace Monogame.Platformer.Engine
         [STAThread]
         static void Main()
         {
-            using (var game = new Game1())
+            using (MasterController game = new MasterController())
+            {
                 game.Run();
+            }
         }
     }
 }

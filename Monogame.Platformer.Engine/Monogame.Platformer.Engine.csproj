@@ -32,5 +32,6 @@
     <Folder Include="Content\bin\DesktopGL\Content\" />
     <Folder Include="Content\Levels\" />
     <Folder Include="Content\Levels\Level1\" />
+    <Folder Include="View\" />
   </ItemGroup>
 </Project>

@@ -127,17 +127,17 @@ namespace Monogame.Platformer.Engine.Controller
             _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, transform);
 
             _spriteBatch.Draw(_backGround, Vector2.Zero, Color.White);
-            _spriteBatch.Draw(_playerTexture, _player.GetPositionAsVector(), Color.White);
+            _spriteBatch.Draw(_playerTexture, _player.GetPositionV(), Color.White);
             _map.DrawLayer(_spriteBatch, 0, rect, 0f);
 
-            //Texture2D r = new Texture2D(_graphics.GraphicsDevice, _player.Bounds.Width, _player.Bounds.Height);
+            Texture2D r = new Texture2D(_graphics.GraphicsDevice, _player.Bounds.Width, _player.Bounds.Height);
 
-            //Color[] data = new Color[_player.Bounds.Width * _player.Bounds.Height];
-            //for (int i = 0; i < data.Length; ++i) data[i] = Color.White * 0.50f;
-            //r.SetData(data);
+            Color[] data = new Color[_player.Bounds.Width * _player.Bounds.Height];
+            for (int i = 0; i < data.Length; ++i) data[i] = Color.White * 0.50f;
+            r.SetData(data);
 
-            //Vector2 coor = _player.Position;
-            //_spriteBatch.Draw(r, coor, Color.White);
+            Vector2 coor = _player.GetPositionV();
+            _spriteBatch.Draw(r, coor, Color.White);
 
             _spriteBatch.End();
 

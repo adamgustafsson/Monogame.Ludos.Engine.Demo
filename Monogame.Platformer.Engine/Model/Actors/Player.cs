@@ -1,7 +1,9 @@
 ﻿using FuncWorks.XNA.XTiled;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Drawing;
 using System.Linq;
 
 namespace Monogame.Platformer.Engine.Model
@@ -10,14 +12,19 @@ namespace Monogame.Platformer.Engine.Model
     {
         private Map _map;
         private bool _onGround;
-        private Point _lastPosAdjustment;
-        private Rectangle _lastPosition;
+        private PointF _lastPosAdjustment;
+        private RectangleF _lastPosition;
         private bool _jumpIsDisabled;
+        private bool _wallJumpEnabled = true;
+        private bool _isWallClinging;
 
-        public Player(Point startLocation, Map tmxMap)
+        private float _currentAcceleration = 0.001f;
+        private float _accelerationIncrease = 0.15f;
+
+        public Player(PointF startLocation, Map tmxMap)
         {
             Gravity = 600;
-            Bounds = new Rectangle(startLocation, new Point(16, 16));
+            Bounds = new RectangleF(startLocation, new SizeF(16, 16));
             Velocity = new Vector2(0, 0);
             Speed = new Vector2(10, 200);
             _map = tmxMap;
@@ -26,17 +33,18 @@ namespace Monogame.Platformer.Engine.Model
         public void Update(float elapsedTime, KeyboardState keyboardState)
         {
             _lastPosition = Bounds;
-                      
-            var direction = GetDirection(keyboardState);  
+
+            var direction = GetDirection(keyboardState);
+            Accelerate(ref direction);
             Velocity = CalculateMoveVelocity(Velocity, direction, Speed, elapsedTime);
             
             var currentPosition = new Vector2(Bounds.X, Bounds.Y);
             currentPosition += Velocity * elapsedTime;
 
-            Bounds.X = (Convert.ToInt32(currentPosition.X));
-            Bounds.Y = (Convert.ToInt32(currentPosition.Y));
+            Bounds.X = currentPosition.X;
+            Bounds.Y = currentPosition.Y;
 
-            CheckVerticalCollision();
+            CalculateCollision();
         }
 
         public Vector2 GetPositionV()
@@ -44,36 +52,35 @@ namespace Monogame.Platformer.Engine.Model
             return new Vector2(Bounds.X, Bounds.Y);
         }
 
-        private void CheckVerticalCollision()
+        private void CalculateCollision()
         {
-
-
-            var collisionRects = _map.GetObjectsInRegion(0, Bounds);
-
+            var collisionRects = _map.GetObjectsInRegion(0, Utillities.Utilities.Round(Bounds));
 
             foreach (var collisionRect in collisionRects)
             {
-                var isGroundCollision = _lastPosition.Bottom <= collisionRect.Bounds.Top && Bounds.Bottom >= collisionRect.Bounds.Top;
-                var isRoofCollision = _lastPosition.Top >= collisionRect.Bounds.Bottom && Bounds.Top <= collisionRect.Bounds.Bottom;
-                var isRightCollision = _lastPosition.Right <= collisionRect.Bounds.Left && Bounds.Right >= collisionRect.Bounds.Left;
-                var isLeftCollision = _lastPosition.Left >= collisionRect.Bounds.Right && Bounds.Left <= collisionRect.Bounds.Right;
+                var isGroundCollision = Convert.ToInt32(_lastPosition.Bottom) <= collisionRect.Bounds.Top && Convert.ToInt32(Bounds.Bottom) >= collisionRect.Bounds.Top;
+                var isRoofCollision = Convert.ToInt32(_lastPosition.Top) >= collisionRect.Bounds.Bottom && Convert.ToInt32(Bounds.Top) < collisionRect.Bounds.Bottom;
+                var isRightCollision = Convert.ToInt32(_lastPosition.Right) <= collisionRect.Bounds.Left && Convert.ToInt32(Bounds.Right) >= collisionRect.Bounds.Left;
+                var isLeftCollision = Convert.ToInt32(_lastPosition.Left) >= collisionRect.Bounds.Right && Convert.ToInt32(Bounds.Left) <= collisionRect.Bounds.Right;
 
                 if (isGroundCollision && !_onGround)
                 {
-                    SetPosition(_lastPosition.X, collisionRect.Bounds.Top - Bounds.Height);
+                    Bounds.Location = new PointF(_lastPosition.X, collisionRect.Bounds.Top - Bounds.Height);
                     _onGround = true;
-                    _lastPosAdjustment = GetPosition();
+                    _isWallClinging = false;
+                    _lastPosAdjustment = Bounds.Location;
                     Velocity.Y = Velocity.Y > 0 ? 0 : Velocity.Y;
                 }
                 else if (isRoofCollision)
                 {
                     Velocity.Y = 0;
-                    SetPosition(_lastPosition.X, collisionRect.Bounds.Bottom);
+                    Bounds.Location = new PointF(_lastPosition.X, collisionRect.Bounds.Bottom);
                 }
                 else if (isRightCollision)
                 {
-                    Bounds.X = collisionRect.Bounds.Left - Bounds.Width;
+                     Bounds.X = collisionRect.Bounds.Left - Bounds.Width;
                     _lastPosAdjustment.X = Bounds.X;
+                    _isWallClinging = _wallJumpEnabled;
                 }
                 else if (isLeftCollision)
                 {
@@ -95,6 +102,11 @@ namespace Monogame.Platformer.Engine.Model
                     _onGround = false;
                 }
 
+                if (_isWallClinging && !collisionRectsInflateOne.Any(x => x.Bounds.Left == Bounds.Right))
+                {
+                    _isWallClinging = false;
+                }
+
                 _jumpIsDisabled = collisionRectsInflateOne.Any(x => (x.Bounds.Bottom == Bounds.Top)); // Object bottom is colliding.
             }
 
@@ -104,9 +116,27 @@ namespace Monogame.Platformer.Engine.Model
         {
             var newVelocity = linearVelocity;
             newVelocity.X = speed.X * direction.X;
-            newVelocity.Y += (_onGround ? 0: Gravity) * elapsedTime;
 
-            if (direction.Y == -1f && !_jumpIsDisabled)
+
+            if (_isWallClinging && newVelocity.Y >= 0)
+            {
+                newVelocity.Y = 15;
+
+                if (direction.Y == -1f)
+                {
+                    newVelocity.Y = speed.Y * direction.Y;
+                    newVelocity.X = -15f;
+                }
+            }
+            else
+            {
+                // Standard.
+                newVelocity.Y += (_onGround ? 0 : Gravity) * elapsedTime;
+            }
+
+
+
+            if (direction.Y == -1f && !_jumpIsDisabled && !_isWallClinging)
             {
                 newVelocity.Y = speed.Y * direction.Y;
                 _onGround = false;
@@ -116,24 +146,29 @@ namespace Monogame.Platformer.Engine.Model
 
         private Vector2 GetDirection(KeyboardState keyboardState)
         {
-            var movingLeft = keyboardState.IsKeyDown(Keys.A) ? -Speed.X : 0;
-            var movingRight = keyboardState.IsKeyDown(Keys.D) ? -Speed.X : 0;
+            var movingLeft = keyboardState.IsKeyDown(Keys.A) ? -Speed.X * _currentAcceleration : 0;
+            var movingRight = keyboardState.IsKeyDown(Keys.D) ? -Speed.X * _currentAcceleration : 0;
+
+            var wallJump = _wallJumpEnabled && _isWallClinging;
 
             return new Vector2(
                 movingLeft - movingRight,
-                keyboardState.IsKeyDown(Keys.Space) && _onGround ? -1.0f : 0f
+                keyboardState.IsKeyDown(Keys.Space) && (_onGround || wallJump) ? -1.0f : 0f
             );
         }
 
-        private void SetPosition(int xPos, int yPos)
+        private void Accelerate(ref Vector2 direction)
         {
-            Bounds.X = xPos;
-            Bounds.Y = yPos;
-        }
+            direction.X = direction.X > Speed.X ? Speed.X : direction.X;
+            direction.X = direction.X < -Speed.X ? -Speed.X : direction.X;
 
-        private Point GetPosition()
-        {
-            return new Point(Bounds.X, Bounds.Y);
+            var acceleratingRight = direction.X > 0 && _currentAcceleration < 1;
+            var acceleratingLeft = direction.X < 0 && _currentAcceleration < 1;
+
+            if (acceleratingRight || acceleratingLeft)
+                _currentAcceleration += _accelerationIncrease;
+            else if (direction.X == 0)
+                _currentAcceleration = 0.001f;
         }
     }
 }

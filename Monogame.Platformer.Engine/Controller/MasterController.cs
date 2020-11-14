@@ -86,7 +86,7 @@ namespace Monogame.Platformer.Engine.Controller
             _backGround = Content.Load<Texture2D>("Levels/Level1/TileImages/background");
             _playerTexture = Content.Load<Texture2D>("Assets/player");
 
-            _player = new Player(new Point(10, 175), _map);
+            _player = new Player(new System.Drawing.PointF(10, 175), _map);
         }
 
         protected override void Update(GameTime gameTime)
@@ -130,9 +130,9 @@ namespace Monogame.Platformer.Engine.Controller
             _spriteBatch.Draw(_playerTexture, _player.GetPositionV(), Color.White);
             _map.DrawLayer(_spriteBatch, 0, rect, 0f);
 
-            Texture2D r = new Texture2D(_graphics.GraphicsDevice, _player.Bounds.Width, _player.Bounds.Height);
+            Texture2D r = new Texture2D(_graphics.GraphicsDevice, (int)_player.Bounds.Width, (int)_player.Bounds.Height);
 
-            Color[] data = new Color[_player.Bounds.Width * _player.Bounds.Height];
+            Color[] data = new Color[(int)_player.Bounds.Width * (int)_player.Bounds.Height];
             for (int i = 0; i < data.Length; ++i) data[i] = Color.White * 0.50f;
             r.SetData(data);
 
@@ -144,6 +144,9 @@ namespace Monogame.Platformer.Engine.Controller
             _spriteBatch.Begin();  
             
             _fpsCounter.DrawFps(_spriteBatch, _fpsFont, new Vector2(10f, 10f), Color.WhiteSmoke);
+
+            _spriteBatch.DrawString(_fpsFont, "Speed: " +  _player.Velocity.X, new Vector2(13f, 80f), Color.WhiteSmoke);
+            _spriteBatch.DrawString(_fpsFont, "Velocity Y: " + _player.Velocity.Y, new Vector2(13f, 90f), Color.WhiteSmoke);
 
             _spriteBatch.End();
 

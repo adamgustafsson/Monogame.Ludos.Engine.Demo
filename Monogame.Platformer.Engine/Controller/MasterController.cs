@@ -3,8 +3,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Monogame.Platformer.Engine.Model;
-using System;
-using System.Net.Http.Headers;
+using System;S
+using Utillities.Debug;
 
 namespace Monogame.Platformer.Engine.Controller
 {
@@ -18,12 +18,11 @@ namespace Monogame.Platformer.Engine.Controller
         private Point _oldWindowSize;
         private RenderTarget2D _offScreenRenderTarget;
         
-        private FpsCounter.FpsCounter _fpsCounter = new FpsCounter.FpsCounter();
-        
-        private SpriteFont _fpsFont;
         private Texture2D _backGround;
         private Texture2D _playerTexture;
         private Player _player;
+
+        private DebugInfo _debugInfo;
 
         public MasterController()
         {
@@ -32,6 +31,8 @@ namespace Monogame.Platformer.Engine.Controller
             IsMouseVisible = true;
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += OnResize;
+
+            _debugInfo = new DebugInfo();
        }
 
         public void OnResize(Object sender, EventArgs e)
@@ -82,11 +83,12 @@ namespace Monogame.Platformer.Engine.Controller
             _map = TMXContentProcessor.LoadTMX("Levels/Level1/map1.tmx", "Levels/Level1/TileImages", Content);
             //_map = TMXContentProcessor.LoadTMX("Levels/Level-3_org.tmx", "Levels/TileTextures", Content);
 
-            _fpsFont = Content.Load<SpriteFont>("Fonts/Segoe");
             _backGround = Content.Load<Texture2D>("Levels/Level1/TileImages/background");
             _playerTexture = Content.Load<Texture2D>("Assets/player");
 
             _player = new Player(new System.Drawing.PointF(10, 175), _map);
+
+            _debugInfo.LoadContent(Content, _graphics.GraphicsDevice);
         }
 
         protected override void Update(GameTime gameTime)
@@ -94,8 +96,9 @@ namespace Monogame.Platformer.Engine.Controller
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            _fpsCounter.Update(gameTime);
             _player.Update((float)gameTime.ElapsedGameTime.TotalSeconds, Keyboard.GetState());
+
+            _debugInfo.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -130,23 +133,13 @@ namespace Monogame.Platformer.Engine.Controller
             _spriteBatch.Draw(_playerTexture, _player.GetPositionV(), Color.White);
             _map.DrawLayer(_spriteBatch, 0, rect, 0f);
 
-            Texture2D r = new Texture2D(_graphics.GraphicsDevice, (int)_player.Bounds.Width, (int)_player.Bounds.Height);
-
-            Color[] data = new Color[(int)_player.Bounds.Width * (int)_player.Bounds.Height];
-            for (int i = 0; i < data.Length; ++i) data[i] = Color.White * 0.50f;
-            r.SetData(data);
-
-            Vector2 coor = _player.GetPositionV();
-            _spriteBatch.Draw(r, coor, Color.White);
+            _debugInfo.DrawRectancgle(_spriteBatch, (int)_player.Bounds.Width, (int)_player.Bounds.Height, _player.GetPositionV(), transparancy: 0.50f);
 
             _spriteBatch.End();
 
-            _spriteBatch.Begin();  
-            
-            _fpsCounter.DrawFps(_spriteBatch, _fpsFont, new Vector2(10f, 10f), Color.WhiteSmoke);
+            _spriteBatch.Begin();
 
-            _spriteBatch.DrawString(_fpsFont, "Speed: " +  _player.Velocity.X, new Vector2(13f, 80f), Color.WhiteSmoke);
-            _spriteBatch.DrawString(_fpsFont, "Velocity Y: " + _player.Velocity.Y, new Vector2(13f, 90f), Color.WhiteSmoke);
+            _debugInfo.DrawDebugInfo(gameTime, _spriteBatch, _player);
 
             _spriteBatch.End();
 

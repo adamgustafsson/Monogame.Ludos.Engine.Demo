@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Monogame.Platformer.Engine.Model
 {
-    class Player : Actor
+    public class Player : Actor
     {
         private Map _map;
         private bool _onGround;

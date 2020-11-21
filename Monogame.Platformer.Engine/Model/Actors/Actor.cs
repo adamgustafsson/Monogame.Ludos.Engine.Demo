@@ -2,7 +2,7 @@
 
 namespace Monogame.Platformer.Engine.Model
 {
-    class Actor
+    public class Actor
     {
         public float Gravity;
         public Vector2 Speed = Vector2.Zero;

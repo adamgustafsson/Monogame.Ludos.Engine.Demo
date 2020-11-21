@@ -79,7 +79,7 @@ namespace Monogame.Platformer.Engine.Model
                     Velocity.Y = 0;
                     Bounds.Location = new PointF(_lastPosition.X, collisionRect.Bounds.Bottom);
 
-                    _wallJumpAbility.IsWallJumping = false;
+                    _wallJumpAbility.ResetAbility();
                 }
                 else if (isRightCollision)
                 {
@@ -129,67 +129,26 @@ namespace Monogame.Platformer.Engine.Model
         private Vector2 CalculateMoveVelocity(Vector2 linearVelocity, Vector2 direction, Vector2 speed, float elapsedTime)
         {
             var newVelocity = linearVelocity;
-            var originalXdirection = direction.X;
 
-            var isReleasingWallLeftwards = direction.X < 0 && _wallJumpAbility.Direction == WallJumping.Direct.Right;
-            var isRealeasingWallRightwards = direction.X > 0 && _wallJumpAbility.Direction == WallJumping.Direct.Left;
-
-            // Short cooldown for x and y movement when starting to cling against a wall.
-            direction.X = _wallJumpAbility.IsWallClinging && _wallJumpAbility.WallClingReleaseCd.ElapsedMilliseconds < 500 ? 0 : originalXdirection;
-
-            if (_wallJumpAbility.IsWallClinging && (isReleasingWallLeftwards || isRealeasingWallRightwards))
+            if (_wallJumpAbility.AbilityEnabled)
             {
-                _wallJumpAbility.WallClingReleaseCd.Start();
-            }
-
-            if (!_wallJumpAbility.IsWallJumping)
-            {
-                newVelocity.X = speed.X * direction.X;
-            }
-            else if (_wallJumpAbility.IsWallJumping && (isReleasingWallLeftwards || isRealeasingWallRightwards))
-            {
-                _wallJumpAbility.ResetWallJumping();
-            }
-            else if (_wallJumpAbility.IsWallJumping && _wallJumpAbility.WallJumpTimer.ElapsedMilliseconds > 150)
-            {
-                _currentAcceleration = 0.0001f;
-                _wallJumpAbility.ResetWallJumping();
-            }
-
-
-            if (_wallJumpAbility.IsWallClinging && newVelocity.Y >= 0)
-            {
-                newVelocity.Y = 15;
-
-                if (direction.Y == -1f)
-                {
-                    _wallJumpAbility.IsWallJumping = true;
-
-                    if ((_wallJumpAbility.Direction == WallJumping.Direct.Right && originalXdirection < 0) || (_wallJumpAbility.Direction == WallJumping.Direct.Left && originalXdirection > 0))
-                    {
-                        newVelocity.Y = (speed.Y * 1.25f) * direction.Y;
-                    }
-                    else if (originalXdirection != 0)
-                    {
-                        newVelocity.Y = speed.Y * direction.Y;
-                    }
-
-                    newVelocity.X = _wallJumpAbility.Direction == WallJumping.Direct.Right ? -25 : 25;
-                    _wallJumpAbility.WallJumpTimer.Start();
-                }
+                var useDefaultYVelocity = false;
+                newVelocity = _wallJumpAbility.CalculatVelocity(newVelocity, speed, ref direction, ref _currentAcceleration, ref useDefaultYVelocity);            
+                newVelocity.Y = useDefaultYVelocity ? (newVelocity.Y += (_onGround ? 0 : Gravity) * elapsedTime) : newVelocity.Y;
             }
             else
             {
-                // Standard.
+                newVelocity.X = speed.X * direction.X;
                 newVelocity.Y += (_onGround ? 0 : Gravity) * elapsedTime;
             }
 
-
+            // Standard single jump.
             if (direction.Y == -1f && !_jumpIsDisabled && !_wallJumpAbility.IsWallClinging)
             {
                 newVelocity.Y = speed.Y * direction.Y;
                 _onGround = false;
             }
+
             return newVelocity;
         }
 

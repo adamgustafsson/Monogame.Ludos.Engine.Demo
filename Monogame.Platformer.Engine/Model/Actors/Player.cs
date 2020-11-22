@@ -19,6 +19,8 @@ namespace Monogame.Platformer.Engine.Model
         private float _currentAcceleration = 0.001f;
         private float _accelerationIncrease = 0.15f;
 
+        private bool _jumpButtonPressedDown = false;
+
         private WallJumping _wallJumpAbility;
 
         public Player(PointF startLocation, Map tmxMap)
@@ -156,10 +158,22 @@ namespace Monogame.Platformer.Engine.Model
         {
             var movingLeft = keyboardState.IsKeyDown(Keys.A) ? -Speed.X * _currentAcceleration : 0;
             var movingRight = keyboardState.IsKeyDown(Keys.D) ? -Speed.X * _currentAcceleration : 0;
+            var jumpEnabled = false; 
+            
+            if (keyboardState.IsKeyDown(Keys.Space) && !_jumpButtonPressedDown)
+            {
+                _jumpButtonPressedDown = true;
+                jumpEnabled = true;
+            }
+
+            if (keyboardState.IsKeyUp(Keys.Space))
+            {
+                _jumpButtonPressedDown = false;
+            }
 
             return new Vector2(
                 movingLeft - movingRight,
-                keyboardState.IsKeyDown(Keys.Space) && (_onGround || _wallJumpAbility.IsWallClinging) ? -1.0f : 0f
+                jumpEnabled && (_onGround || _wallJumpAbility.IsWallClinging) ? -1.0f : 0f
             );
         }
 

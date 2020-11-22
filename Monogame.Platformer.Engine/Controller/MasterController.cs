@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Monogame.Platformer.Engine.Model;
-using System;S
+using System;
 using Utillities.Debug;
 
 namespace Monogame.Platformer.Engine.Controller

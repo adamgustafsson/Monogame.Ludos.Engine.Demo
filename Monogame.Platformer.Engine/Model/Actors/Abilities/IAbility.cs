@@ -1,7 +1,7 @@
 ﻿
 namespace Model.Actors.Abilities
 {
-    interface IAbility
+    public interface IAbility
     {
         bool AbilityEnabled
         {

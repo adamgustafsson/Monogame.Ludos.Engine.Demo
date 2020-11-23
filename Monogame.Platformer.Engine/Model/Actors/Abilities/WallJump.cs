@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Model.Actors.Abilities
 {
-    internal class WallJumping : IAbility
+    internal class WallJump : IAbility
     {
         public bool IsWallClinging { get; set; }
         public bool IsWallJumping { get; set; }
@@ -19,7 +19,7 @@ namespace Model.Actors.Abilities
             Left = -1
         }
 
-        public WallJumping()
+        public WallJump()
         {
             AbilityEnabled = true;
             WallClingReleaseCd = new Stopwatch();
@@ -30,8 +30,8 @@ namespace Model.Actors.Abilities
         {
             var originalXdirection = direction.X;
 
-            var isReleasingWallLeftwards = direction.X < 0 && Direction == WallJumping.Direct.Right;
-            var isRealeasingWallRightwards = direction.X > 0 && Direction == WallJumping.Direct.Left;
+            var isReleasingWallLeftwards = direction.X < 0 && Direction == WallJump.Direct.Right;
+            var isRealeasingWallRightwards = direction.X > 0 && Direction == WallJump.Direct.Left;
 
             // Short cooldown for x and y movement when starting to cling against a wall.
             direction.X = IsWallClinging && WallClingReleaseCd.ElapsedMilliseconds < 500 ? 0 : originalXdirection;
@@ -63,7 +63,7 @@ namespace Model.Actors.Abilities
                 {
                     IsWallJumping = true;
 
-                    if ((Direction == WallJumping.Direct.Right && originalXdirection < 0) || (Direction == WallJumping.Direct.Left && originalXdirection > 0))
+                    if ((Direction == WallJump.Direct.Right && originalXdirection < 0) || (Direction == WallJump.Direct.Left && originalXdirection > 0))
                     {
                         currentVelocity.Y = (actorSpeed.Y * 1.25f) * direction.Y;
                     }
@@ -72,7 +72,7 @@ namespace Model.Actors.Abilities
                         currentVelocity.Y = actorSpeed.Y * direction.Y;
                     }
 
-                    currentVelocity.X = Direction == WallJumping.Direct.Right ? -25 : 25;
+                    currentVelocity.X = Direction == WallJump.Direct.Right ? -25 : 25;
                     WallJumpTimer.Start();
                 }
             }

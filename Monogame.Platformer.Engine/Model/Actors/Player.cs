@@ -1,13 +1,13 @@
 ﻿using FuncWorks.XNA.XTiled;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Model.Actors.Abilities;
 using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 
-namespace Monogame.Platformer.Engine.Model
+namespace Model
 {
     public class Player : Actor
     {
@@ -22,6 +22,8 @@ namespace Monogame.Platformer.Engine.Model
         private bool _jumpButtonPressedDown = false;
 
         private WallJumping _wallJumpAbility;
+        private bool _jumpInitiated;
+
 
         public Player(PointF startLocation, Map tmxMap)
         {
@@ -132,20 +134,24 @@ namespace Monogame.Platformer.Engine.Model
         {
             var newVelocity = linearVelocity;
 
+            var jumpCanceled = newVelocity.Y < 0 && !_jumpButtonPressedDown && !_wallJumpAbility.IsWallJumping;
+            var gravity = jumpCanceled ? Gravity * 3 : Gravity;
+            var defaultVelocityY = newVelocity.Y += (_onGround ? 0 : gravity) * elapsedTime;
+
             if (_wallJumpAbility.AbilityEnabled)
             {
                 var useDefaultYVelocity = false;
-                newVelocity = _wallJumpAbility.CalculatVelocity(newVelocity, speed, ref direction, ref _currentAcceleration, ref useDefaultYVelocity);            
-                newVelocity.Y = useDefaultYVelocity ? (newVelocity.Y += (_onGround ? 0 : Gravity) * elapsedTime) : newVelocity.Y;
+                newVelocity = _wallJumpAbility.CalculatVelocity(newVelocity, speed, _jumpInitiated, ref direction, ref _currentAcceleration, ref useDefaultYVelocity);            
+                newVelocity.Y = useDefaultYVelocity ? defaultVelocityY : newVelocity.Y;
             }
             else
             {
                 newVelocity.X = speed.X * direction.X;
-                newVelocity.Y += (_onGround ? 0 : Gravity) * elapsedTime;
+                newVelocity.Y = defaultVelocityY;
             }
 
             // Standard single jump.
-            if (direction.Y == -1f && !_jumpIsDisabled && !_wallJumpAbility.IsWallClinging)
+            if (_jumpInitiated  && !_jumpIsDisabled && !_wallJumpAbility.IsWallClinging)
             {
                 newVelocity.Y = speed.Y * direction.Y;
                 _onGround = false;
@@ -158,8 +164,21 @@ namespace Monogame.Platformer.Engine.Model
         {
             var movingLeft = keyboardState.IsKeyDown(Keys.A) ? -Speed.X * _currentAcceleration : 0;
             var movingRight = keyboardState.IsKeyDown(Keys.D) ? -Speed.X * _currentAcceleration : 0;
-            var jumpEnabled = false; 
-            
+
+            var jumpQueueIsOk = JumpQueueIsOk(keyboardState);
+            _jumpInitiated = jumpQueueIsOk && (_onGround || _wallJumpAbility.IsWallClinging);
+
+            return new Vector2(
+                movingLeft - movingRight,
+                _jumpInitiated ? -1 : 0f
+            );
+        }
+
+
+        private bool JumpQueueIsOk(KeyboardState keyboardState)
+        {
+            var jumpEnabled = false;
+
             if (keyboardState.IsKeyDown(Keys.Space) && !_jumpButtonPressedDown)
             {
                 _jumpButtonPressedDown = true;
@@ -169,12 +188,10 @@ namespace Monogame.Platformer.Engine.Model
             if (keyboardState.IsKeyUp(Keys.Space))
             {
                 _jumpButtonPressedDown = false;
+               
             }
 
-            return new Vector2(
-                movingLeft - movingRight,
-                jumpEnabled && (_onGround || _wallJumpAbility.IsWallClinging) ? -1.0f : 0f
-            );
+            return jumpEnabled;
         }
 
         private void Accelerate(ref Vector2 direction)

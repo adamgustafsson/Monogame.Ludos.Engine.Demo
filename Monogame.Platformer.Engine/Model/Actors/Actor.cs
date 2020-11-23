@@ -1,12 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Drawing;
 
-namespace Monogame.Platformer.Engine.Model
+namespace Model
 {
     public class Actor
     {
-        public float Gravity;
-        public Vector2 Speed = Vector2.Zero;
-        public Vector2 Velocity = Vector2.Zero;
-        public System.Drawing.RectangleF Bounds;
+        public float Gravity { get; set; }
+        public Vector2 Speed { get; set; } = Vector2.Zero;
+        public Vector2 Velocity;
+        public RectangleF Bounds;
     }
 }

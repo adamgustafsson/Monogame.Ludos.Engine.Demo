@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Monogame.Platformer.Engine.Model;
+using Model;
 using System;
 using Utillities.Debug;
 

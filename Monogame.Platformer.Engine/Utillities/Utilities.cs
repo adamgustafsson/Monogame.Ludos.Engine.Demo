@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Monogame.Platformer.Engine.Utillities
+namespace Utillities
 {
     static class Utilities
     {

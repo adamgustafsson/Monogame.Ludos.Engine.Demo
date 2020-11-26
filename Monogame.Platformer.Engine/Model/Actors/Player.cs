@@ -12,18 +12,17 @@ namespace Model.Actors
     public class Player : Actor
     {
         private Map _map;
-        private bool _onGround;
+
         private PointF _lastPosAdjustment;
         private RectangleF _lastPosition;
+        
+        private bool _onGround;
         private bool _imidiateTopCollisionExists;
+        private bool _jumpButtonPressedDown = false;
+        private bool _jumpInitiated;
+
         private float _currentAcceleration = 0.001f;
         private float _accelerationIncrease = 0.15f;
-
-        private bool _jumpButtonPressedDown = false;
-
-        private WallJump _wallJumpAbility;
-        private DoubleJump _doubleJumpAbility;
-        private bool _jumpInitiated;
 
         public Player(PointF startLocation, Map tmxMap)
         {
@@ -33,8 +32,8 @@ namespace Model.Actors
             Speed = new Vector2(10, 200);
             _map = tmxMap;
 
-            _wallJumpAbility = new WallJump();
-            _doubleJumpAbility = new DoubleJump();
+            Abilities.AddRange(new List<IAbility>() { new WallJump(), new DoubleJump() });
+            GetAbility<DoubleJump>().AbilityEnabled = false;
         }
 
         public void Update(float elapsedTime, KeyboardState keyboardState)
@@ -52,22 +51,14 @@ namespace Model.Actors
             Bounds.Y = currentPosition.Y;
 
             CalculateCollision();
+            SetState();
 
-            if (Velocity.Y < 0)
-                CurrentState = State.Jumping;
-            else if (_wallJumpAbility.IsWallClinging)
-                CurrentState = State.WallClinging;
-            else if (Velocity.Y > 0)
-                CurrentState = State.Falling;
-            else
-                CurrentState = State.Grounded;
-
-            SetState(new List<IAbility>() { _wallJumpAbility, _doubleJumpAbility });
-
-
-            if ((CurrentState == State.Jumping || CurrentState == State.Falling) && !_doubleJumpAbility.DoubleJumpUsed)
+            if (GetAbility<DoubleJump>()?.AbilityEnabled ?? false)
             {
-                _doubleJumpAbility.DoubleJumpAvailable = true;
+                if ((CurrentState == State.Jumping || CurrentState == State.Falling) && !GetAbility<DoubleJump>().DoubleJumpUsed)
+                {
+                    GetAbility<DoubleJump>().DoubleJumpAvailable = true;
+                }
             }
         }
 
@@ -94,25 +85,25 @@ namespace Model.Actors
                     _lastPosAdjustment = Bounds.Location;
                     Velocity.Y = Velocity.Y > 0 ? 0 : Velocity.Y;
 
-                    _wallJumpAbility.ResetAbility();
-                    _doubleJumpAbility.ResetAbility();
+                    GetAbility<WallJump>()?.ResetAbility();
+                    GetAbility<DoubleJump>()?.ResetAbility();
                 }
                 else if (isRoofCollision)
                 {
                     Velocity.Y = 0;
                     Bounds.Location = new PointF(_lastPosition.X, collisionRect.Bounds.Bottom);
 
-                    _wallJumpAbility.ResetAbility();
+                    GetAbility<WallJump>()?.ResetAbility();
                 }
                 else if (isRightCollision)
                 {
                      Bounds.X = collisionRect.Bounds.Left - Bounds.Width;
                     _lastPosAdjustment.X = Bounds.X;
 
-                    if (_wallJumpAbility.AbilityEnabled)
+                    if (GetAbility<WallJump>()?.AbilityEnabled ?? false)
                     {
-                        _wallJumpAbility.InitiateWallclinging(direction: WallJump.Direct.Right);
-                        _doubleJumpAbility.ResetAbility();
+                        GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.Direct.Right);
+                        GetAbility<DoubleJump>()?.ResetAbility();
                     }
 
                 }
@@ -121,10 +112,10 @@ namespace Model.Actors
                     Bounds.X = collisionRect.Bounds.Right;
                     _lastPosAdjustment.X = Bounds.X;
 
-                    if (_wallJumpAbility.AbilityEnabled)
+                    if (GetAbility<WallJump>()?.AbilityEnabled ?? false)
                     {
-                        _wallJumpAbility.InitiateWallclinging(direction: WallJump.Direct.Left);
-                        _doubleJumpAbility.ResetAbility();
+                        GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.Direct.Left);
+                        GetAbility<DoubleJump>()?.ResetAbility();
                     }
                 }
             }
@@ -142,11 +133,11 @@ namespace Model.Actors
                     _onGround = false;
                 }
 
-                if (_wallJumpAbility.AbilityEnabled)
+                if (GetAbility<WallJump>()?.AbilityEnabled ?? false)
                 {
-                    if (_wallJumpAbility.IsWallClinging && (!collisionRectsInflateOne.Any(x => x.Bounds.Left == Bounds.Right) && !collisionRectsInflateOne.Any(x => x.Bounds.Right == Bounds.Left)))
+                    if (GetAbility<WallJump>().IsWallClinging && (!collisionRectsInflateOne.Any(x => x.Bounds.Left == Bounds.Right) && !collisionRectsInflateOne.Any(x => x.Bounds.Right == Bounds.Left)))
                     {
-                        _wallJumpAbility.ResetWallClinging();
+                        GetAbility<WallJump>().ResetWallClinging();
                     }
                 }
 
@@ -159,14 +150,14 @@ namespace Model.Actors
         {
             var newVelocity = linearVelocity;
 
-            var jumpCanceled = newVelocity.Y < 0 && !_jumpButtonPressedDown && !_wallJumpAbility.IsWallJumping;
+            var jumpCanceled = newVelocity.Y < 0 && !_jumpButtonPressedDown && !(GetAbility<WallJump>()?.IsWallJumping ?? false);
             var gravity = jumpCanceled ? Gravity * 3 : Gravity;
             var defaultVelocityY = newVelocity.Y += (_onGround ? 0 : gravity) * elapsedTime;
 
-            if (_wallJumpAbility.AbilityEnabled)
+            if (GetAbility<WallJump>()?.AbilityEnabled ?? false)
             {
                 var useDefaultYVelocity = false;
-                newVelocity = _wallJumpAbility.CalculatVelocity(newVelocity, speed, _jumpInitiated, ref direction, ref _currentAcceleration, ref useDefaultYVelocity);            
+                newVelocity = GetAbility<WallJump>().CalculatVelocity(newVelocity, speed, _jumpInitiated, ref direction, ref _currentAcceleration, ref useDefaultYVelocity);            
                 newVelocity.Y = useDefaultYVelocity ? defaultVelocityY : newVelocity.Y;
             }
             else
@@ -176,7 +167,7 @@ namespace Model.Actors
             }
 
             // Standard single jump.
-            if (_jumpInitiated  && !_imidiateTopCollisionExists && !_wallJumpAbility.IsWallClinging)
+            if (_jumpInitiated  && !_imidiateTopCollisionExists && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
             {
                 newVelocity.Y = speed.Y * direction.Y;
                 _onGround = false;
@@ -191,12 +182,12 @@ namespace Model.Actors
             var movingRight = keyboardState.IsKeyDown(Keys.D) ? -Speed.X * _currentAcceleration : 0;
 
             var jumpQueueIsOk = JumpQueueIsOk(keyboardState);
-            _jumpInitiated = jumpQueueIsOk && (_onGround || _wallJumpAbility.IsWallClinging || _doubleJumpAbility.DoubleJumpAvailable);
+            _jumpInitiated = jumpQueueIsOk && (_onGround || (GetAbility<WallJump>()?.IsWallClinging ?? false) || (GetAbility<DoubleJump>()?.DoubleJumpAvailable ?? false));
 
-            if (_jumpInitiated && _onGround == false && _wallJumpAbility.IsWallClinging == false)
+            if (_jumpInitiated && !_onGround && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
             {
-                _doubleJumpAbility.DoubleJumpAvailable = false;
-                _doubleJumpAbility.DoubleJumpUsed = true;
+                GetAbility<DoubleJump>().DoubleJumpAvailable = false;
+                GetAbility<DoubleJump>().DoubleJumpUsed = true;
             }
 
             return new Vector2(
@@ -208,12 +199,12 @@ namespace Model.Actors
 
         private bool JumpQueueIsOk(KeyboardState keyboardState)
         {
-            var jumpEnabled = false;
+            var jumpAvailable = false;
 
             if (keyboardState.IsKeyDown(Keys.Space) && !_jumpButtonPressedDown)
             {
                 _jumpButtonPressedDown = true;
-                jumpEnabled = true;
+                jumpAvailable = true;
             }
 
             if (keyboardState.IsKeyUp(Keys.Space))
@@ -222,7 +213,7 @@ namespace Model.Actors
                
             }
 
-            return jumpEnabled;
+            return jumpAvailable;
         }
 
         private void Accelerate(ref Vector2 direction)

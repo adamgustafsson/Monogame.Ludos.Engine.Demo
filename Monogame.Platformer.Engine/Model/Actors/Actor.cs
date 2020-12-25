@@ -21,8 +21,10 @@ namespace Model.Actors
         {
             Jumping = 0,
             Falling = 1,
-            Grounded = 3,
-            WallClinging = 4
+            Idle = 3,
+            WallClinging = 4,
+            MovingRight = 5,
+            MovingLeft = 6,
         };
 
         public void SetState()
@@ -33,8 +35,12 @@ namespace Model.Actors
                 CurrentState = State.WallClinging;
             else if (Velocity.Y > 0)
                 CurrentState = State.Falling;
+            else if (Velocity.X > 0)
+                CurrentState = State.MovingRight;
+            else if (Velocity.X < 0)
+                CurrentState = State.MovingLeft;
             else
-                CurrentState = State.Grounded;
+                CurrentState = State.Idle;
         }
 
         public T GetAbility<T>()

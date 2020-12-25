@@ -10,10 +10,10 @@ namespace Model.Actors.Abilities
         public bool IsWallJumping { get; set; }
         public Stopwatch WallJumpTimer { get; set; }
         public Stopwatch WallClingReleaseCd { get; set; }
-        public Direct Direction { get; set; }
+        public ClingDir ClingDirection { get; set; }
         public bool AbilityEnabled { get; set; }
 
-        public enum Direct
+        public enum ClingDir
         {
             Right = 1,
             Left = -1
@@ -30,8 +30,8 @@ namespace Model.Actors.Abilities
         {
             var originalXdirection = direction.X;
 
-            var isReleasingWallLeftwards = direction.X < 0 && Direction == WallJump.Direct.Right;
-            var isRealeasingWallRightwards = direction.X > 0 && Direction == WallJump.Direct.Left;
+            var isReleasingWallLeftwards = direction.X < 0 && ClingDirection == WallJump.ClingDir.Right;
+            var isRealeasingWallRightwards = direction.X > 0 && ClingDirection == WallJump.ClingDir.Left;
 
             // Short cooldown for x and y movement when starting to cling against a wall.
             direction.X = IsWallClinging && WallClingReleaseCd.ElapsedMilliseconds < 500 ? 0 : originalXdirection;
@@ -63,7 +63,7 @@ namespace Model.Actors.Abilities
                 {
                     IsWallJumping = true;
 
-                    if ((Direction == WallJump.Direct.Right && originalXdirection < 0) || (Direction == WallJump.Direct.Left && originalXdirection > 0))
+                    if ((ClingDirection == WallJump.ClingDir.Right && originalXdirection < 0) || (ClingDirection == WallJump.ClingDir.Left && originalXdirection > 0))
                     {
                         currentVelocity.Y = (actorSpeed.Y * 1.25f) * direction.Y;
                     }
@@ -72,7 +72,7 @@ namespace Model.Actors.Abilities
                         currentVelocity.Y = actorSpeed.Y * direction.Y;
                     }
 
-                    currentVelocity.X = Direction == WallJump.Direct.Right ? -25 : 25;
+                    currentVelocity.X = ClingDirection == WallJump.ClingDir.Right ? -25 : 25;
                     WallJumpTimer.Start();
                 }
             }
@@ -84,11 +84,11 @@ namespace Model.Actors.Abilities
             return currentVelocity;
         }
 
-        public void InitiateWallclinging(Direct direction)
+        public void InitiateWallclinging(ClingDir direction)
         {
             IsWallClinging = true;
             IsWallJumping = false;
-            Direction = direction;
+            ClingDirection = direction;
         }
 
         public void ResetWallClinging()

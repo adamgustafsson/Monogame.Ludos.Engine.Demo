@@ -33,7 +33,7 @@ namespace Model.Actors
             _map = tmxMap;
 
             Abilities.AddRange(new List<IAbility>() { new WallJump(), new DoubleJump() });
-            GetAbility<DoubleJump>().AbilityEnabled = false;
+            //GetAbility<DoubleJump>().AbilityEnabled = false;
         }
 
         public void Update(float elapsedTime, KeyboardState keyboardState)
@@ -102,7 +102,7 @@ namespace Model.Actors
 
                     if (GetAbility<WallJump>()?.AbilityEnabled ?? false)
                     {
-                        GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.Direct.Right);
+                        GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.ClingDir.Right);
                         GetAbility<DoubleJump>()?.ResetAbility();
                     }
 
@@ -114,7 +114,7 @@ namespace Model.Actors
 
                     if (GetAbility<WallJump>()?.AbilityEnabled ?? false)
                     {
-                        GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.Direct.Left);
+                        GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.ClingDir.Left);
                         GetAbility<DoubleJump>()?.ResetAbility();
                     }
                 }

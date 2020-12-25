@@ -23,6 +23,8 @@ namespace Monogame.Platformer.Engine.Controller
         private Texture2D _playerTexture;
         private Player _player;
 
+        private View.Camera2D _camera;
+
         private DebugInfo _debugInfo;
 
         public MasterController()
@@ -82,14 +84,13 @@ namespace Monogame.Platformer.Engine.Controller
 
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _map = TMXContentProcessor.LoadTMX("Levels/Level1/map1.tmx", "Levels/Level1/TileImages", Content);
-            //_map = TMXContentProcessor.LoadTMX("Levels/Level-3_org.tmx", "Levels/TileTextures", Content);
-
             _backGround = Content.Load<Texture2D>("Levels/Level1/TileImages/background");
             _playerTexture = Content.Load<Texture2D>("Assets/player");
 
-            _player = new Player(new System.Drawing.PointF(10, 175), _map);
-
+            _player = new Player(new System.Drawing.PointF(30, 300), _map);
             _debugInfo.LoadContent(Content, _graphics.GraphicsDevice);
+
+            _camera = new View.Camera2D(_graphics.GraphicsDevice, _player, cameraScale: 4);
         }
 
         protected override void Update(GameTime gameTime)
@@ -97,8 +98,9 @@ namespace Monogame.Platformer.Engine.Controller
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            _player.Update((float)gameTime.ElapsedGameTime.TotalSeconds, Keyboard.GetState());
 
+            _player.Update((float)gameTime.ElapsedGameTime.TotalSeconds, Keyboard.GetState());
+            _camera.Update();
             _debugInfo.Update(gameTime);
 
             base.Update(gameTime);
@@ -123,6 +125,7 @@ namespace Monogame.Platformer.Engine.Controller
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             var rect = new Rectangle(0, 0, 1920, 1080);
+            var playerPos = _camera.VisualizeCordinates(_player.GetPositionV());
 
             Matrix transform = Matrix.CreateScale(4);
 
@@ -131,10 +134,12 @@ namespace Monogame.Platformer.Engine.Controller
             _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, transform);
 
             _spriteBatch.Draw(_backGround, Vector2.Zero, Color.White);
-            _spriteBatch.Draw(_playerTexture, _player.GetPositionV(), Color.White);
-            _map.DrawLayer(_spriteBatch, 0, rect, 0f);
+            _spriteBatch.Draw(_playerTexture, playerPos, Color.White);
+            _map.DrawLayer(_spriteBatch, 0, _camera.CameraBounds, 0f);
 
-            _debugInfo.DrawRectancgle(_spriteBatch, (int)_player.Bounds.Width, (int)_player.Bounds.Height, _player.GetPositionV(), transparancy: 0.50f);
+            var cameraMovementBoundsPos = _camera.VisualizeCordinates(new Vector2(_camera.MovementBounds.X, _camera.MovementBounds.Y));
+            _debugInfo.DrawRectancgle(_spriteBatch, (int)_player.Bounds.Width, (int)_player.Bounds.Height, playerPos, transparancy: 0.50f);
+            _debugInfo.DrawRectancgle(_spriteBatch, (int)_camera.MovementBounds.Width, (int)_camera.MovementBounds.Height, cameraMovementBoundsPos, transparancy: 0.50f);
 
             _spriteBatch.End();
 

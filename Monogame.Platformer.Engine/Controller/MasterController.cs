@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using Model;
 using Model.Actors;
 using System;
+using System.Collections.Generic;
 using Utillities.Debug;
 
 namespace Monogame.Platformer.Engine.Controller
@@ -13,8 +14,8 @@ namespace Monogame.Platformer.Engine.Controller
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-        private Map _map;
-        
+        private Model.World.TMXManager _tmxManager;
+
         private float _aspectRatio;
         private Point _oldWindowSize;
         private RenderTarget2D _offScreenRenderTarget;
@@ -83,11 +84,20 @@ namespace Monogame.Platformer.Engine.Controller
             _offScreenRenderTarget = new RenderTarget2D(GraphicsDevice, Window.ClientBounds.Width, Window.ClientBounds.Height);
 
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            _map = TMXContentProcessor.LoadTMX("Levels/Level1/map1.tmx", "Levels/Level1/TileImages", Content);
             _backGround = Content.Load<Texture2D>("Levels/Level1/TileImages/background");
             _playerTexture = Content.Load<Texture2D>("Assets/player");
 
-            _player = new Player(new System.Drawing.PointF(30, 300), _map);
+
+            var map = new Model.World.TmxMapInfo
+            {
+                Name = "map1.tmx",
+                Path = "Levels/Level1/",
+                ResourcePath = "Levels/Level1/TileImages",
+                NonDefaultLayerNames = null
+            };
+             
+            _tmxManager = new Model.World.TMXManager(Content, new List<Model.World.TmxMapInfo> { map });
+            _player = new Player(new System.Drawing.PointF(871, 300), _tmxManager);
             _debugInfo.LoadContent(Content, _graphics.GraphicsDevice);
 
             _camera = new View.Camera2D(_graphics.GraphicsDevice, _player, cameraScale: 4);
@@ -97,7 +107,6 @@ namespace Monogame.Platformer.Engine.Controller
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
 
             _player.Update((float)gameTime.ElapsedGameTime.TotalSeconds, Keyboard.GetState());
             _camera.Update();
@@ -134,12 +143,12 @@ namespace Monogame.Platformer.Engine.Controller
             _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, transform);
 
             _spriteBatch.Draw(_backGround, Vector2.Zero, Color.White);
+            _tmxManager.CurrentMap.DrawLayer(_spriteBatch, 0, _camera.CameraBounds, 0f);
             _spriteBatch.Draw(_playerTexture, playerPos, Color.White);
-            _map.DrawLayer(_spriteBatch, 0, _camera.CameraBounds, 0f);
 
             var cameraMovementBoundsPos = _camera.VisualizeCordinates(new Vector2(_camera.MovementBounds.X, _camera.MovementBounds.Y));
             _debugInfo.DrawRectancgle(_spriteBatch, (int)_player.Bounds.Width, (int)_player.Bounds.Height, playerPos, transparancy: 0.50f);
-            _debugInfo.DrawRectancgle(_spriteBatch, (int)_camera.MovementBounds.Width, (int)_camera.MovementBounds.Height, cameraMovementBoundsPos, transparancy: 0.50f);
+            //_debugInfo.DrawRectancgle(_spriteBatch, (int)_camera.MovementBounds.Width, (int)_camera.MovementBounds.Height, cameraMovementBoundsPos, transparancy: 0.50f);
 
             _spriteBatch.End();
 

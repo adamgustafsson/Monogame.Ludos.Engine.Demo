@@ -102,6 +102,18 @@
 /processorParam:TextureFormat=Color
 /build:Levels/Level1/TileImages/sp_ground.png
 
+#begin Levels/Level1/TileImages/sp_objects.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Levels/Level1/TileImages/sp_objects.png
+
 #begin Levels/Level1/TileImages/tileset.png
 /importer:TextureImporter
 /processor:TextureProcessor

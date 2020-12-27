@@ -11,8 +11,7 @@ namespace Model.Actors
 {
     public class Player : Actor
     {
-        private Map _map;
-
+        private World.TMXManager _tmxManager;
         private PointF _lastPosAdjustment;
         private RectangleF _lastPosition;
         
@@ -24,13 +23,13 @@ namespace Model.Actors
         private float _currentAcceleration = 0.001f;
         private float _accelerationIncrease = 0.15f;
 
-        public Player(PointF startLocation, Map tmxMap)
+        public Player(PointF startLocation, World.TMXManager tmxManager)
         {
             Gravity = 600;
             Bounds = new RectangleF(startLocation, new SizeF(16, 16));
             Velocity = new Vector2(0, 0);
             Speed = new Vector2(10, 200);
-            _map = tmxMap;
+            _tmxManager = tmxManager;
 
             Abilities.AddRange(new List<IAbility>() { new WallJump(), new DoubleJump() });
             //GetAbility<DoubleJump>().AbilityEnabled = false;
@@ -69,7 +68,7 @@ namespace Model.Actors
 
         private void CalculateCollision()
         {
-            var collisionRects = _map.GetObjectsInRegion(0, Utillities.Utilities.Round(Bounds));
+            var collisionRects = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.GROUND_COLLISION, Utillities.Utilities.Round(Bounds));
 
             foreach (var collisionRect in collisionRects)
             {
@@ -100,7 +99,7 @@ namespace Model.Actors
                      Bounds.X = collisionRect.Bounds.Left - Bounds.Width;
                     _lastPosAdjustment.X = Bounds.X;
 
-                    if (GetAbility<WallJump>()?.AbilityEnabled ?? false)
+                    if ((GetAbility<WallJump>()?.AbilityEnabled ?? false) && !_onGround)
                     {
                         GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.ClingDir.Right);
                         GetAbility<DoubleJump>()?.ResetAbility();
@@ -112,7 +111,7 @@ namespace Model.Actors
                     Bounds.X = collisionRect.Bounds.Right;
                     _lastPosAdjustment.X = Bounds.X;
 
-                    if (GetAbility<WallJump>()?.AbilityEnabled ?? false)
+                    if ((GetAbility<WallJump>()?.AbilityEnabled ?? false) && !_onGround)
                     {
                         GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.ClingDir.Left);
                         GetAbility<DoubleJump>()?.ResetAbility();
@@ -125,8 +124,8 @@ namespace Model.Actors
             if (!collisionRects.Any())
             {
                 var colDetectionRect = Bounds;
-                colDetectionRect.Inflate(1, 1);
-                var collisionRectsInflateOne = _map.GetObjectsInRegion(0, colDetectionRect);
+                colDetectionRect.Inflate(0.2f, 0.2f);
+                var collisionRectsInflateOne = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.GROUND_COLLISION, colDetectionRect);
 
                 if (!collisionRectsInflateOne.Any(x => (x.Bounds.Top == Bounds.Bottom)))
                 {
@@ -172,6 +171,8 @@ namespace Model.Actors
                 newVelocity.Y = speed.Y * direction.Y;
                 _onGround = false;
             }
+
+            //newVelocity.Y = speed.X * 1;
 
             return newVelocity;
         }

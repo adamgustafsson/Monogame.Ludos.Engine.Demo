@@ -12,6 +12,7 @@ namespace Model.Actors
         public float Gravity { get; set; }
         public Vector2 Speed { get; set; } = Vector2.Zero;
         public State CurrentState { get; set; }
+        public bool OnLadder { get; set; }
         public List<IAbility> Abilities { get; set; } = new List<IAbility>();
 
         public Vector2 Velocity;
@@ -25,11 +26,20 @@ namespace Model.Actors
             WallClinging = 4,
             MovingRight = 5,
             MovingLeft = 6,
+            ClimbingUp = 7,
+            ClimbingDown = 8,
+            ClimbingIdle = 9
         };
 
         public void SetState()
         {
-            if (Velocity.Y < 0)
+            if (Velocity.Y < 0 && OnLadder)
+                CurrentState = State.ClimbingUp;
+            else if (Velocity.Y > 0 && OnLadder)
+                CurrentState = State.ClimbingDown;
+            else if (OnLadder)
+                CurrentState = State.ClimbingIdle;
+            else if (Velocity.Y < 0)
                 CurrentState = State.Jumping;
             else if (GetAbility<WallJump>()?.IsWallClinging ?? false)
                 CurrentState = State.WallClinging;

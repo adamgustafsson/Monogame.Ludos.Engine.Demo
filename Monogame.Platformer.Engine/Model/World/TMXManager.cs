@@ -2,6 +2,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
+using System.Linq;
+
 namespace Model.World
 {
     public class TMXManager
@@ -36,9 +38,15 @@ namespace Model.World
             return _layerIndexInfo[layerName];
         }
 
-        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, System.Drawing.RectangleF region)
+        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, System.Drawing.RectangleF region, KeyValuePair<string, string>? property = null)
         {
             return CurrentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
+        }
+
+        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, System.Drawing.RectangleF region, KeyValuePair<string, string> property)
+        {
+            var objectsInRegion = CurrentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
+            return objectsInRegion.Any() ? objectsInRegion.Where(x => x.Properties.ContainsKey(property.Key) && x.Properties[property.Key].Value == property.Value) : new List<MapObject>();
         }
 
         public IEnumerable<MapObject> GetObjectsInRegion(string layerName, Rectangle region)

@@ -20,6 +20,9 @@ namespace Model.Actors
         private bool _jumpButtonPressedDown = false;
         private bool _jumpInitiated;
 
+        private bool _ladderIsAvailable;
+        private MapObject _mostRecentLadder;
+
         private float _currentAcceleration = 0.001f;
         private float _accelerationIncrease = 0.15f;
 
@@ -50,6 +53,7 @@ namespace Model.Actors
             Bounds.Y = currentPosition.Y;
 
             CalculateCollision();
+            CalculateLadderCollision();
             SetState();
 
             if (GetAbility<DoubleJump>()?.AbilityEnabled ?? false)
@@ -79,13 +83,7 @@ namespace Model.Actors
 
                 if (isGroundCollision && !_onGround)
                 {
-                    Bounds.Location = new PointF(_lastPosition.X, collisionRect.Bounds.Top - Bounds.Height);
-                    _onGround = true;
-                    _lastPosAdjustment = Bounds.Location;
-                    Velocity.Y = Velocity.Y > 0 ? 0 : Velocity.Y;
-
-                    GetAbility<WallJump>()?.ResetAbility();
-                    GetAbility<DoubleJump>()?.ResetAbility();
+                    SetGrounded(new PointF(_lastPosition.X, collisionRect.Bounds.Top - Bounds.Height));
                 }
                 else if (isRoofCollision)
                 {
@@ -142,7 +140,59 @@ namespace Model.Actors
 
                 _imidiateTopCollisionExists = collisionRectsInflateOne.Any(x => (x.Bounds.Bottom == Bounds.Top)); // Object bottom is colliding.
             }
+        }
 
+        private void CalculateLadderCollision()
+        {
+            var ladderDetectionBounds = Bounds;
+            ladderDetectionBounds.Inflate(-(Bounds.Width * 0.60f), 0f);
+
+            var onTopOfLadder = false;
+
+            if (_mostRecentLadder != null)
+            {
+                onTopOfLadder = (ladderDetectionBounds.Right <= _mostRecentLadder.Bounds.Right) &&
+                    (ladderDetectionBounds.Left >= _mostRecentLadder.Bounds.Left) &&
+                    (Convert.ToInt32(_lastPosition.Bottom) <= _mostRecentLadder.Bounds.Top && Convert.ToInt32(Bounds.Bottom) >= _mostRecentLadder.Bounds.Top);
+
+                if (onTopOfLadder)
+                {
+                    SetGrounded(new PointF(Bounds.X, _mostRecentLadder.Bounds.Top - Bounds.Height));
+                }
+            }
+
+            var ladders = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.INTERACTABLE_OBJECTS, ladderDetectionBounds, new KeyValuePair<string, string>("type", "ladder"));
+            _ladderIsAvailable = ladders.Any();
+
+            if (!_ladderIsAvailable)
+            {
+                OnLadder = false;
+            }
+            else if (OnLadder)
+            {
+                _mostRecentLadder = ladders.ToList()[0];
+
+                if (!(_onGround && !onTopOfLadder))
+                {
+                    Bounds.X = _mostRecentLadder.Bounds.X;
+                }
+
+                if (onTopOfLadder)
+                {
+                    Bounds.Y = Bounds.Y + (Bounds.Height / 4);
+                }
+            }
+        }
+
+        private void SetGrounded(PointF currentPosition)
+        {
+            Bounds.Location = currentPosition;
+            _onGround = true;
+            _lastPosAdjustment = Bounds.Location;
+            Velocity.Y = Velocity.Y > 0 ? 0 : Velocity.Y;
+
+            GetAbility<WallJump>()?.ResetAbility();
+            GetAbility<DoubleJump>()?.ResetAbility();
         }
 
         private Vector2 CalculateMoveVelocity(Vector2 linearVelocity, Vector2 direction, Vector2 speed, float elapsedTime)
@@ -170,9 +220,17 @@ namespace Model.Actors
             {
                 newVelocity.Y = speed.Y * direction.Y;
                 _onGround = false;
-            }
+                OnLadder = false;
+            } 
+            if (OnLadder)
+            {
+                newVelocity.Y = speed.X * direction.Y;
 
-            //newVelocity.Y = speed.X * 1;
+                if (_onGround && newVelocity.Y > 0)
+                {
+                    newVelocity.Y = 0;
+                }
+            }
 
             return newVelocity;
         }
@@ -182,18 +240,29 @@ namespace Model.Actors
             var movingLeft = keyboardState.IsKeyDown(Keys.A) ? -Speed.X * _currentAcceleration : 0;
             var movingRight = keyboardState.IsKeyDown(Keys.D) ? -Speed.X * _currentAcceleration : 0;
 
-            var jumpQueueIsOk = JumpQueueIsOk(keyboardState);
-            _jumpInitiated = jumpQueueIsOk && (_onGround || (GetAbility<WallJump>()?.IsWallClinging ?? false) || (GetAbility<DoubleJump>()?.DoubleJumpAvailable ?? false));
+            var climbingUp = keyboardState.IsKeyDown(Keys.W) && _ladderIsAvailable ? -Speed.X : 0;
+            var climbingDown = keyboardState.IsKeyDown(Keys.S) && _ladderIsAvailable ? -Speed.X : 0;
 
-            if (_jumpInitiated && !_onGround && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
+            var jumpQueueIsOk = JumpQueueIsOk(keyboardState);
+            _jumpInitiated = jumpQueueIsOk && (_onGround || OnLadder || (GetAbility<WallJump>()?.IsWallClinging ?? false) || (GetAbility<DoubleJump>()?.DoubleJumpAvailable ?? false));
+
+            if (_jumpInitiated && !_onGround && !OnLadder && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
             {
                 GetAbility<DoubleJump>().DoubleJumpAvailable = false;
                 GetAbility<DoubleJump>().DoubleJumpUsed = true;
             }
 
+            var climbingDirection = climbingUp - climbingDown;
+
+            if (!OnLadder && climbingDirection != 0)
+            {
+                OnLadder = true;
+                GetAbility<DoubleJump>()?.ResetAbility();
+            }
+
             return new Vector2(
                 movingLeft - movingRight,
-                _jumpInitiated ? -1 : 0f
+                _jumpInitiated ? -1 : climbingDirection
             );
         }
 

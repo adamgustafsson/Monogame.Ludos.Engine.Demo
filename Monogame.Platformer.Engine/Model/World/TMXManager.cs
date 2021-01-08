@@ -14,6 +14,7 @@ namespace Model.World
         private List<Map> _maps;
         private List<TmxMapInfo> _mapsInfo;
         private Dictionary<string, int> _layerIndexInfo;
+        public List<MovingPlatform> MovingPlatforms = new List<MovingPlatform>();
 
         public TMXManager(ContentManager content, List<TmxMapInfo> mapsInfo)
         {
@@ -24,6 +25,11 @@ namespace Model.World
             LoadMaps(content);
             PopulateLayerNames();
             AssignObjectLayers();
+
+            foreach (var mapObject in CurrentMap.ObjectLayers[DefaultLayerInfo.GROUND_COLLISION].MapObjects.Where(x => x.Polyline != null))
+            {
+                MovingPlatforms.Add(new MovingPlatform(mapObject.Polyline, mapsInfo[_currentLevelIndex].MovingPlatformSize));
+            }
         }
 
         public void LoadMap(int mapIndex)
@@ -31,6 +37,14 @@ namespace Model.World
             _currentLevelIndex = mapIndex;
             PopulateLayerNames();
             AssignObjectLayers();
+        }
+
+        public void Update(GameTime gameTime, System.Drawing.RectangleF cameraBounds)
+        {
+            foreach (var movingPlatform in MovingPlatforms)
+            {
+                movingPlatform.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+            }
         }
 
         public int GetLayerIndex(string layerName)
@@ -100,5 +114,6 @@ namespace Model.World
         public string ResourcePath;
         public string Name;
         public List<string> NonDefaultLayerNames;
+        public Point MovingPlatformSize;
     }
 }

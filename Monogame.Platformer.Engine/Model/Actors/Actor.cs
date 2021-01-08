@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Model.Actors.Abilities;
-using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -17,6 +16,7 @@ namespace Model.Actors
 
         public Vector2 Velocity;
         public RectangleF Bounds;
+        public RectangleF BottomDetectBounds;
 
         public enum State
         {

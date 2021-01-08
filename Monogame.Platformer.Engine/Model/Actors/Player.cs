@@ -12,7 +12,6 @@ namespace Model.Actors
     public class Player : Actor
     {
         private World.TMXManager _tmxManager;
-        private PointF _lastPosAdjustment;
         private RectangleF _lastPosition;
         
         private bool _onGround;
@@ -26,12 +25,14 @@ namespace Model.Actors
         private float _currentAcceleration = 0.001f;
         private float _accelerationIncrease = 0.15f;
 
+        private bool _onMovingPlatform;
+
         public Player(PointF startLocation, World.TMXManager tmxManager)
         {
             Gravity = 600;
-            Bounds = new RectangleF(startLocation, new SizeF(16, 16));
+            Bounds = new RectangleF(startLocation, new SizeF(16, 24));
             Velocity = new Vector2(0, 0);
-            Speed = new Vector2(10, 200);
+            Speed = new Vector2(10, Bounds.Y > 16 ? 225 : 200);
             _tmxManager = tmxManager;
 
             Abilities.AddRange(new List<IAbility>() { new WallJump(), new DoubleJump() });
@@ -54,7 +55,10 @@ namespace Model.Actors
 
             CalculateCollision();
             CalculateLadderCollision();
+            CalculateMovingPlatformCollision();
             SetState();
+
+            BottomDetectBounds = new RectangleF(Bounds.X, Bounds.Y + (Bounds.Height * 0.90f), Bounds.Width, Bounds.Height * 0.13f);
 
             if (GetAbility<DoubleJump>()?.AbilityEnabled ?? false)
             {
@@ -70,11 +74,35 @@ namespace Model.Actors
             return new Vector2(Bounds.X, Bounds.Y);
         }
 
+        private void CalculateMovingPlatformCollision()
+        {
+            _onMovingPlatform = false;
+
+            foreach (var mp in _tmxManager.MovingPlatforms)
+            {
+                var platformBounds = mp.Bounds;
+
+                if (platformBounds.Intersects(Bounds))
+                {
+                    if (mp.DetectionBounds.Intersects(BottomDetectBounds) && !_jumpInitiated)
+                    {
+                        Bounds.Y = platformBounds.Top - Bounds.Height;
+                        Bounds.Offset(mp.Change);
+                        Velocity.Y = Velocity.Y > 0 ? 0 : Velocity.Y;
+                        GetAbility<WallJump>()?.ResetAbility();
+                        GetAbility<DoubleJump>()?.ResetAbility();
+                        _onMovingPlatform = true;
+                    }
+
+                }
+            }
+        }
+
         private void CalculateCollision()
         {
             var collisionRects = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.GROUND_COLLISION, Utillities.Utilities.Round(Bounds));
 
-            foreach (var collisionRect in collisionRects)
+            foreach (var collisionRect in collisionRects.Where(x => x.Polyline == null))
             {
                 var isGroundCollision = Convert.ToInt32(_lastPosition.Bottom) <= collisionRect.Bounds.Top && Convert.ToInt32(Bounds.Bottom) >= collisionRect.Bounds.Top;
                 var isRoofCollision = Convert.ToInt32(_lastPosition.Top) >= collisionRect.Bounds.Bottom && Convert.ToInt32(Bounds.Top) < collisionRect.Bounds.Bottom;
@@ -95,7 +123,6 @@ namespace Model.Actors
                 else if (isRightCollision)
                 {
                      Bounds.X = collisionRect.Bounds.Left - Bounds.Width;
-                    _lastPosAdjustment.X = Bounds.X;
 
                     if ((GetAbility<WallJump>()?.AbilityEnabled ?? false) && !_onGround)
                     {
@@ -107,7 +134,6 @@ namespace Model.Actors
                 else if (isLeftCollision)
                 {
                     Bounds.X = collisionRect.Bounds.Right;
-                    _lastPosAdjustment.X = Bounds.X;
 
                     if ((GetAbility<WallJump>()?.AbilityEnabled ?? false) && !_onGround)
                     {
@@ -188,7 +214,6 @@ namespace Model.Actors
         {
             Bounds.Location = currentPosition;
             _onGround = true;
-            _lastPosAdjustment = Bounds.Location;
             Velocity.Y = Velocity.Y > 0 ? 0 : Velocity.Y;
 
             GetAbility<WallJump>()?.ResetAbility();
@@ -244,9 +269,9 @@ namespace Model.Actors
             var climbingDown = keyboardState.IsKeyDown(Keys.S) && _ladderIsAvailable ? -Speed.X : 0;
 
             var jumpQueueIsOk = JumpQueueIsOk(keyboardState);
-            _jumpInitiated = jumpQueueIsOk && (_onGround || OnLadder || (GetAbility<WallJump>()?.IsWallClinging ?? false) || (GetAbility<DoubleJump>()?.DoubleJumpAvailable ?? false));
+            _jumpInitiated = jumpQueueIsOk && (_onGround || OnLadder || _onMovingPlatform || (GetAbility<WallJump>()?.IsWallClinging ?? false) || (GetAbility<DoubleJump>()?.DoubleJumpAvailable ?? false));
 
-            if (_jumpInitiated && !_onGround && !OnLadder && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
+            if (_jumpInitiated && !_onGround && !OnLadder && !_onMovingPlatform && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
             {
                 GetAbility<DoubleJump>().DoubleJumpAvailable = false;
                 GetAbility<DoubleJump>().DoubleJumpUsed = true;

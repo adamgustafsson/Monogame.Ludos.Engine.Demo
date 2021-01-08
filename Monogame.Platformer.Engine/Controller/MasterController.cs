@@ -93,11 +93,12 @@ namespace Monogame.Platformer.Engine.Controller
                 Name = "map1.tmx",
                 Path = "Levels/Level1/",
                 ResourcePath = "Levels/Level1/TileImages",
-                NonDefaultLayerNames = null
+                NonDefaultLayerNames = null,
+                MovingPlatformSize = new Point(48, 16)
             };
              
             _tmxManager = new Model.World.TMXManager(Content, new List<Model.World.TmxMapInfo> { map });
-            _player = new Player(new System.Drawing.PointF(871, 300), _tmxManager);
+            _player = new Player(new System.Drawing.PointF(1271, 280), _tmxManager);
             _debugInfo.LoadContent(Content, _graphics.GraphicsDevice);
 
             _camera = new View.Camera2D(_graphics.GraphicsDevice, _player, cameraScale: 4);
@@ -108,6 +109,7 @@ namespace Monogame.Platformer.Engine.Controller
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            _tmxManager.Update(gameTime, _camera.CameraBounds);
             _player.Update((float)gameTime.ElapsedGameTime.TotalSeconds, Keyboard.GetState());
             _camera.Update();
             _debugInfo.Update(gameTime);
@@ -144,11 +146,23 @@ namespace Monogame.Platformer.Engine.Controller
 
             _spriteBatch.Draw(_backGround, Vector2.Zero, Color.White);
             _tmxManager.CurrentMap.DrawLayer(_spriteBatch, 0, _camera.CameraBounds, 0f);
-            _spriteBatch.Draw(_playerTexture, playerPos, Color.White);
+            //_spriteBatch.Draw(_playerTexture, playerPos, Color.White);
 
-            var cameraMovementBoundsPos = _camera.VisualizeCordinates(new Vector2(_camera.MovementBounds.X, _camera.MovementBounds.Y));
+            #region Debug
+
             _debugInfo.DrawRectancgle(_spriteBatch, (int)_player.Bounds.Width, (int)_player.Bounds.Height, playerPos, transparancy: 0.50f);
-            //_debugInfo.DrawRectancgle(_spriteBatch, (int)_camera.MovementBounds.Width, (int)_camera.MovementBounds.Height, cameraMovementBoundsPos, transparancy: 0.50f);
+            //_debugInfo.DrawRectancgle(_spriteBatch, (int)_player.BottomDetectBounds.Width, (int)_player.BottomDetectBounds.Height, _camera.VisualizeCordinates(_player.BottomDetectBounds), color: Color.Red, transparancy: 0.50f);
+            //_debugInfo.DrawRectancgle(_spriteBatch, (int)_camera.MovementBounds.Width, (int)_camera.MovementBounds.Height, _camera.VisualizeCordinates(_camera.MovementBounds), transparancy: 0.50f);
+            //_tmxManager.CurrentMap.DrawObjectLayer(_spriteBatch, 0, Utillities.Utilities.Round(_camera.CameraBounds), 0f);
+
+            #endregion
+
+            foreach (var platform in _tmxManager.MovingPlatforms)
+            {
+                var platPos = _camera.VisualizeCordinates(new Vector2(platform.Bounds.X, platform.Bounds.Y));
+                _debugInfo.DrawRectancgle(_spriteBatch, (int)platform.Bounds.Width, (int)platform.Bounds.Height, platPos, Color.DarkBlue);
+                //_debugInfo.DrawRectancgle(_spriteBatch, (int)platform.DetectionBounds.Width, (int)platform.DetectionBounds.Height, platPos, color: Color.Green);
+            }
 
             _spriteBatch.End();
 

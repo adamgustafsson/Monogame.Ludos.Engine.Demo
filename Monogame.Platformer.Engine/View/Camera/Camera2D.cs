@@ -89,6 +89,10 @@ namespace View
         {
             return new Vector2(cordinates.X - _cameraBounds.X, cordinates.Y - _cameraBounds.Y);
         }
+        internal Vector2 VisualizeCordinates(RectangleF recF)
+        {
+            return new Vector2(recF.X - _cameraBounds.X, recF.Y - _cameraBounds.Y);
+        }
 
     }
 }

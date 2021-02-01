@@ -8,15 +8,13 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
+	<CodeAnalysisRuleSet>ca.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Content\Assets\**" />
     <Compile Remove="Content\bin\**" />
     <Compile Remove="Content\obj\**" />
-    <EmbeddedResource Remove="Content\Assets\**" />
     <EmbeddedResource Remove="Content\bin\**" />
     <EmbeddedResource Remove="Content\obj\**" />
-    <None Remove="Content\Assets\**" />
     <None Remove="Content\bin\**" />
     <None Remove="Content\obj\**" />
   </ItemGroup>
@@ -30,6 +28,7 @@
     <EmbeddedResource Include="Icon.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
     <None Include="Content\Content.mgcb" />
   </ItemGroup>
   <ItemGroup>
@@ -38,6 +37,10 @@
   <ItemGroup>
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.0.1641" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.321">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Ludos.Engine\Ludos.Engine\Ludos.Engine.csproj" />

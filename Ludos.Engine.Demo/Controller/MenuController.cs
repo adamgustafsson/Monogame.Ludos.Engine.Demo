@@ -71,14 +71,14 @@ namespace LudosEngineDemo
 
         private void LoadContentBasedComponents()
         {
-            _startMenuBackgroundTexture = _content.Load<Texture2D>("Assets/GUI/Textures/startmenu-bg");
-            var startMenuButtonTexture = _content.Load<Texture2D>("Assets/GUI/Buttons/menubutton");
+            _startMenuBackgroundTexture = Content.Load<Texture2D>("Assets/GUI/Textures/startmenu-bg");
+            var startMenuButtonTexture = Content.Load<Texture2D>("Assets/GUI/Buttons/menubutton");
 
             var APosition = new Vector2(160, 98);
             var BPosition = new Vector2(160, 123);
             var CPosition = new Vector2(160, 148);
 
-            var buttonA = new Button(startMenuButtonTexture, _buttonFont, _inputManager)
+            var buttonA = new Button(startMenuButtonTexture, _buttonFont, InputManager)
             {
                 Text = _buttonText1,
                 Position = APosition,
@@ -100,7 +100,7 @@ namespace LudosEngineDemo
             _contentBasedStartMenuComponents = new List<GUIComponent>() { buttonA, buttonB, buttonC };
 
 
-            var pausemenuBackground = new ProceduralTexture(_graphicsDevice, new Rectangle(0, 0, 480, 270))
+            var pausemenuBackground = new ProceduralTexture(Graphics, new Rectangle(0, 0, 480, 270))
             {
                 TextureColors = new Color[] { Color.Black },
                 Transparancy = 0.25f
@@ -128,34 +128,34 @@ namespace LudosEngineDemo
         private void LoadProceduralGeneratedComponents()
         {
             _proceduralStartMenuComponents = new List<GUIComponent>() {
-                new ProceduralTexture(_graphicsDevice, new Rectangle(-1, -1, 242, 137)) {
+                new ProceduralTexture(Graphics, new Rectangle(-1, -1, 242, 137)) {
                     TextureColors = new Color[] { new Color(61, 77, 178) },
                     BorderWidth = 1,
                     BorderColor = new Color(224, 230, 195)
                 },
-                new ProceduralTexture(_graphicsDevice, new Rectangle(240, -1, 241, 137)) {
+                new ProceduralTexture(Graphics, new Rectangle(240, -1, 241, 137)) {
                     TextureColors = new Color[] { new Color(61, 77, 178) },
                     BorderWidth = 1,
                     BorderColor = new Color(224, 230, 195)
                 },
-                new ProceduralTexture(_graphicsDevice, new Rectangle(-1, 135, 242, 137)) {
+                new ProceduralTexture(Graphics, new Rectangle(-1, 135, 242, 137)) {
                     TextureColors = new Color[] { new Color(89, 71, 196) },
                     BorderWidth = 1,
                     BorderColor = new Color(224, 230, 195)
                 },
-                new ProceduralTexture(_graphicsDevice, new Rectangle(240, 135, 242, 137)) {
+                new ProceduralTexture(Graphics, new Rectangle(240, 135, 242, 137)) {
                     TextureColors = new Color[] { new Color(89, 71, 196) },
                     BorderWidth = 1,
                     BorderColor = new Color(224, 230, 195)
                 },
-                new ProceduralTexture(_graphicsDevice, new Rectangle(146, 82, 187, 108)) {
+                new ProceduralTexture(Graphics, new Rectangle(146, 82, 187, 108)) {
                     TextureColors = new Color[] {new Color(224, 230, 195), new Color(211, 216, 184), new Color(211, 216, 184), new Color(193, 198, 169)},
                     BorderWidth = 2,
                     BorderColor = new Color(70, 74, 115)
                 }
             };
 
-            var prButtonA = new ProceduralButton(_graphicsDevice, _buttonFont, _inputManager, new Rectangle(160, 98, 159, 22))
+            var prButtonA = new ProceduralButton(Graphics, _buttonFont, InputManager, new Rectangle(160, 98, 159, 22))
             {
                 Text = _buttonText1,
                 UseFontShading = true,
@@ -192,30 +192,30 @@ namespace LudosEngineDemo
 
         private void StartLevelOne_Click(object sender, EventArgs e)
         {
-            _game.LoadMap("Level1");
-            _game.ChangeState(States.Game);
+            Game.LoadMap("Level1");
+            Game.ChangeState(States.Game);
         }
 
         private void StartLevelTwo_Click(object sender, EventArgs e)
         {
-            _game.LoadMap("Level2");
-            _game.ChangeState(States.Game);
+            Game.LoadMap("Level2");
+            Game.ChangeState(States.Game);
         }
 
         private void Quit_Click(object sender, EventArgs e)
         {
-            _game.GameIsPaused = false;
-            _game.ChangeState(States.Menu);
+            Game.GameIsPaused = false;
+            Game.ChangeState(States.Menu);
         }
 
         private void Exit_Click(object sender, EventArgs e)
         {
-            _game.Exit();
+            Game.Exit();
         }
 
         private void Unpause_Click(object sender, EventArgs e)
         {
-            _game.GameIsPaused = false;
+            Game.GameIsPaused = false;
         }
 
         private void ChangeMenuType_Click(object sender, EventArgs e)

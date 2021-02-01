@@ -1,37 +1,37 @@
-﻿using FuncWorks.XNA.XTiled;
-using Ludos.Engine.Managers;
-using Ludos.Engine.Core;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework.Input;
-
-namespace LudosEngineDemo
+﻿namespace LudosEngineDemo
 {
-    class Game1 : LudosGame
+    using System.Collections.Generic;
+    using FuncWorks.XNA.XTiled;
+    using Ludos.Engine.Core;
+    using Ludos.Engine.Managers;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+    using Microsoft.Xna.Framework.Input;
+
+    public class LudosEngineDemo : LudosGame
     {
         private InputManager _inputManager;
-        private GameState _currentState;
-        private GameState _nextState;
 
-        public Game1()
+        private Model.GameModel _gameModel;
+        private View.GameView _gameView;
+
+        private GameState _currentState;
+        private GameState _queuedState;
+
+        public LudosEngineDemo()
             : base(graphicsScale: 4)
         {
-            Content.RootDirectory = "Content";
-            IsMouseVisible = true;
+            this.Content.RootDirectory = "Content";
+            this.IsMouseVisible = true;
         }
 
         protected override void Initialize()
         {
-            _graphics.PreferredBackBufferHeight = 1080;
-            _graphics.PreferredBackBufferWidth = 1920;
-            _graphics.ApplyChanges();
+            Graphics.PreferredBackBufferHeight = 1080;
+            Graphics.PreferredBackBufferWidth = 1920;
+            Graphics.ApplyChanges();
 
-            base.Initialize();
-        }
-        protected override void LoadContent()
-        {
-            _inputManager = new InputManager(new System.Drawing.Size(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight))
+            _inputManager = new InputManager(new System.Drawing.Size(Graphics.PreferredBackBufferWidth, Graphics.PreferredBackBufferHeight))
             {
                 UserControls = new Dictionary<string, Input>()
                 {
@@ -43,31 +43,35 @@ namespace LudosEngineDemo
                     { InputName.ActionButton1, new Input { Key = Keys.N, Button = Buttons.B} },
                     { InputName.ActionButton2, new Input { Key = Keys.M, Button = Buttons.X} },
                     { InputName.Pause, new Input { Key = Keys.Escape, Button = Buttons.Start } },
-                    { InputName.Select, new Input { Key = Keys.LeftShift, Button = Buttons.LeftShoulder} }
-                }
+                    { InputName.Select, new Input { Key = Keys.LeftShift, Button = Buttons.LeftShoulder } },
+                },
             };
+
+            //_gameModel = new GameModel();
 
             GameStates = new GameState[]
             {
                 new MenuController(this, GraphicsDevice, Content, _inputManager),
-                new GameController(this, GraphicsDevice, Content, _inputManager)
+                new GameController(this, GraphicsDevice, Content, _inputManager),
             };
 
-            //_menuController = new MenuController(this, GraphicsDevice, Content, _inputManager);
-            //_currentState = new GameController(this, GraphicsDevice, Content, _inputManager, levelIndex: 0);
+            _currentState = GameStates[States.Game];
 
-            _currentState = GameStates[States.Menu];
+            base.Initialize();
+        }
 
+        protected override void LoadContent()
+        {
             base.LoadContent();
         }
+
         protected override void Update(GameTime gameTime)
         {
             _inputManager.Update(Window.ClientBounds);
             
-            if (_nextState != null)
-            {
-                _currentState = _nextState;
-                _nextState = null;
+            if (_queuedState != null) {
+                _currentState = _queuedState;
+                _queuedState = null;
             }
 
             _currentState.Update(gameTime);
@@ -83,32 +87,32 @@ namespace LudosEngineDemo
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(new Color(0, 16, 33));
 
             Matrix transform = Matrix.CreateScale(GraphicsScale);
 
             Map.InitObjectDrawing(GraphicsDevice);
 
-            _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, transform);
-             _currentState.Draw(gameTime, _spriteBatch);
+            SpriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, transform);
+             _currentState.Draw(gameTime, SpriteBatch);
 
             if(GameIsPaused)
             {
                 (GameStates[States.Menu] as MenuController).MenuType = MenuController.MenuTypes.PauseMenu;
-                GameStates[States.Menu].Draw(gameTime, _spriteBatch);
+                GameStates[States.Menu].Draw(gameTime, SpriteBatch);
             } 
             else if ((GameStates[States.Menu] as MenuController).MenuType == MenuController.MenuTypes.PauseMenu)
             {
                 (GameStates[States.Menu] as MenuController).MenuType = MenuController.MenuTypes.ContentBased;
             }
 
-            _spriteBatch.End();
+            SpriteBatch.End();
 
             if (_currentState is GameController && !GameIsPaused)
             {
-                _spriteBatch.Begin();
-                (_currentState as GameController).DrawDebugPanel(gameTime, _spriteBatch);
-                _spriteBatch.End();
+                SpriteBatch.Begin();
+                (_currentState as GameController).DrawDebugPanel(gameTime, SpriteBatch);
+                SpriteBatch.End();
             }
 
             base.Draw(gameTime);
@@ -116,7 +120,7 @@ namespace LudosEngineDemo
         }
         public override void ChangeState(int gameStateIndex)
         {
-            _nextState = GameStates[gameStateIndex];
+            _queuedState = GameStates[gameStateIndex];
         }
 
         public override void LoadMap(string mapName)

@@ -2,7 +2,7 @@
 {
     public static class States
     {
-        public static int Menu = 0;
-        public static int Game = 1;
+        public static int Game = 0;
+        public static int Menu = 1;
     }
 }

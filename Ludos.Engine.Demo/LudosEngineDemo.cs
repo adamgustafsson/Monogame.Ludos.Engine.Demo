@@ -1,6 +1,7 @@
 ﻿namespace LudosEngineDemo
 {
     using System.Collections.Generic;
+    using System.Linq;
     using FuncWorks.XNA.XTiled;
     using Ludos.Engine.Core;
     using Ludos.Engine.Managers;
@@ -10,14 +11,6 @@
 
     public class LudosEngineDemo : LudosGame
     {
-        private InputManager _inputManager;
-
-        private Model.GameModel _gameModel;
-        private View.GameView _gameView;
-
-        private GameState _currentState;
-        private GameState _queuedState;
-
         public LudosEngineDemo()
             : base(graphicsScale: 4)
         {
@@ -25,37 +18,44 @@
             this.IsMouseVisible = true;
         }
 
+        public static bool DoExitGame { get; set; }
+
         protected override void Initialize()
         {
             Graphics.PreferredBackBufferHeight = 1080;
             Graphics.PreferredBackBufferWidth = 1920;
             Graphics.ApplyChanges();
 
-            _inputManager = new InputManager(new System.Drawing.Size(Graphics.PreferredBackBufferWidth, Graphics.PreferredBackBufferHeight))
+            var tmxMapInfoList = new List<TMXMapInfo>()
             {
-                UserControls = new Dictionary<string, Input>()
+                new TMXMapInfo { TmxFilePath = "Levels/Level1/Level1.tmx", ResourcePath = "Levels/Level1/TileImages", NonDefaultLayerNames = null, MovingPlatformSize = new Point(48, 16) },
+                new TMXMapInfo { TmxFilePath = "Levels/Level2/Level2.tmx", ResourcePath = "Levels/Level2/TileImages", NonDefaultLayerNames = null, MovingPlatformSize = new Point(48, 16) },
+                new TMXMapInfo { TmxFilePath = "Levels/Level3/Level3.tmx", ResourcePath = "Levels/Level3/TileImages", NonDefaultLayerNames = null, MovingPlatformSize = new Point(48, 16) },
+            };
+
+            var userControls = new Dictionary<string, Input>()
                 {
                     { InputName.MoveUp, new Input { Key = Keys.W, Button = Buttons.LeftThumbstickUp } },
                     { InputName.MoveDown, new Input { Key = Keys.S, Button = Buttons.LeftThumbstickDown } },
                     { InputName.MoveLeft, new Input { Key = Keys.A, Button = Buttons.LeftThumbstickLeft } },
-                    { InputName.MoveRight, new Input { Key = Keys.D, Button = Buttons.LeftThumbstickRight} },
+                    { InputName.MoveRight, new Input { Key = Keys.D, Button = Buttons.LeftThumbstickRight } },
                     { InputName.Jump, new Input { Key = Keys.Space, Button = Buttons.A } },
-                    { InputName.ActionButton1, new Input { Key = Keys.N, Button = Buttons.B} },
-                    { InputName.ActionButton2, new Input { Key = Keys.M, Button = Buttons.X} },
+                    { InputName.ActionButton1, new Input { Key = Keys.N, Button = Buttons.B } },
+                    { InputName.ActionButton2, new Input { Key = Keys.M, Button = Buttons.X } },
                     { InputName.Pause, new Input { Key = Keys.Escape, Button = Buttons.Start } },
                     { InputName.Select, new Input { Key = Keys.LeftShift, Button = Buttons.LeftShoulder } },
-                },
-            };
+                };
 
-            //_gameModel = new GameModel();
+            InitializeTmxManager(tmxMapInfoList);
+            InitializeInputManager(userControls);
 
             GameStates = new GameState[]
             {
-                new MenuController(this, GraphicsDevice, Content, _inputManager),
-                new GameController(this, GraphicsDevice, Content, _inputManager),
+                new GameController(Content, Services),
+                new MenuController(Content, Services) { IsActive = true },
             };
 
-            _currentState = GameStates[States.Game];
+            Map.InitObjectDrawing(GraphicsDevice);
 
             base.Initialize();
         }
@@ -67,19 +67,14 @@
 
         protected override void Update(GameTime gameTime)
         {
-            _inputManager.Update(Window.ClientBounds);
-            
-            if (_queuedState != null) {
-                _currentState = _queuedState;
-                _queuedState = null;
+            if (DoExitGame)
+            {
+                Exit();
             }
 
-            _currentState.Update(gameTime);
-            _currentState.PostUpdate(gameTime);
-
-            if (GameIsPaused)
+            foreach (var activeState in GameStates.Where(x => x.IsActive))
             {
-                GameStates[States.Menu].Update(gameTime);
+                activeState.Update(gameTime);
             }
 
             base.Update(gameTime);
@@ -88,45 +83,30 @@
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(new Color(0, 16, 33));
-
             Matrix transform = Matrix.CreateScale(GraphicsScale);
 
-            Map.InitObjectDrawing(GraphicsDevice);
-
             SpriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, transform);
-             _currentState.Draw(gameTime, SpriteBatch);
 
-            if(GameIsPaused)
+            foreach (var activeState in GameStates.Where(x => x.IsActive))
             {
-                (GameStates[States.Menu] as MenuController).MenuType = MenuController.MenuTypes.PauseMenu;
-                GameStates[States.Menu].Draw(gameTime, SpriteBatch);
-            } 
-            else if ((GameStates[States.Menu] as MenuController).MenuType == MenuController.MenuTypes.PauseMenu)
-            {
-                (GameStates[States.Menu] as MenuController).MenuType = MenuController.MenuTypes.ContentBased;
+                activeState.Draw(gameTime, SpriteBatch);
             }
 
             SpriteBatch.End();
 
-            if (_currentState is GameController && !GameIsPaused)
+            if (!GameIsPaused)
             {
-                SpriteBatch.Begin();
-                (_currentState as GameController).DrawDebugPanel(gameTime, SpriteBatch);
-                SpriteBatch.End();
+                var gameController = GameStates.Where(x => x is GameController && x.IsActive).FirstOrDefault();
+
+                if (gameController != null && !GameIsPaused)
+                {
+                    SpriteBatch.Begin();
+                    (gameController as GameController).DrawDebugPanel(gameTime, SpriteBatch);
+                    SpriteBatch.End();
+                }
             }
 
             base.Draw(gameTime);
-
-        }
-        public override void ChangeState(int gameStateIndex)
-        {
-            _queuedState = GameStates[gameStateIndex];
-        }
-
-        public override void LoadMap(string mapName)
-        {
-            (GameStates[States.Game] as GameController).LoadMap(mapName.EndsWith(".tmx") ? mapName : mapName + ".tmx");
         }
     }
-
 }

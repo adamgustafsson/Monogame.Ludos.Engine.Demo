@@ -1,7 +1,8 @@
 ﻿namespace LudosEngineDemo.Model
 {
-    using Ludos.Engine.Managers;
-    using Ludos.Engine.Model;
+    using Ludos.Engine.Actors;
+    using Ludos.Engine.Input;
+    using Ludos.Engine.Tmx;
     using Microsoft.Xna.Framework;
 
     public class Player : LudosPlayer

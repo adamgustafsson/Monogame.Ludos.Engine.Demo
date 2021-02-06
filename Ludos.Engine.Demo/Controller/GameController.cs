@@ -1,8 +1,9 @@
 ﻿namespace LudosEngineDemo
 {
+    using Ludos.Engine.Actors;
     using Ludos.Engine.Core;
-    using Ludos.Engine.Managers;
-    using Ludos.Engine.Model;
+    using Ludos.Engine.Input;
+    using Ludos.Engine.Tmx;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Content;
     using Microsoft.Xna.Framework.Graphics;

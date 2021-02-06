@@ -4,7 +4,8 @@
     using System.Collections.Generic;
     using Ludos.Engine.Core;
     using Ludos.Engine.Graphics;
-    using Ludos.Engine.Managers;
+    using Ludos.Engine.Input;
+    using Ludos.Engine.Tmx;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Content;
     using Microsoft.Xna.Framework.Graphics;

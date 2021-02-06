@@ -7,7 +7,7 @@
     using Microsoft.Xna.Framework.Content;
     using Microsoft.Xna.Framework.Graphics;
 
-    public class GameController : GameState
+    public class GameController : IGameState
     {
         private readonly TMXManager _tmxManager;
         private readonly LudosPlayer _player;
@@ -22,9 +22,9 @@
             _currentMap = _tmxManager.CurrentMapName;
         }
 
-        public override bool IsActive { get; set; }
+        public bool IsActive { get; set; }
 
-        public override void Update(GameTime gameTime)
+        public void Update(GameTime gameTime)
         {
             if (_currentMap != _tmxManager.CurrentMapName)
             {
@@ -40,11 +40,11 @@
             _gameView.Update(gameTime);
         }
 
-        public override void PostUpdate(GameTime gameTime)
+        public void PostUpdate(GameTime gameTime)
         {
         }
 
-        public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+        public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             _gameView.Draw(gameTime, spriteBatch);
         }

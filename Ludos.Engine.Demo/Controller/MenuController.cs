@@ -9,7 +9,7 @@
     using Microsoft.Xna.Framework.Content;
     using Microsoft.Xna.Framework.Graphics;
 
-    public class MenuController : GameState
+    public class MenuController : IGameState
     {
         private Texture2D _startMenuBackgroundTexture;
         private Texture2D _startMenuButtonTexture;
@@ -53,7 +53,7 @@
         }
 
         public MenuTypes MenuType { get; set; }
-        public override bool IsActive { get; set; }
+        public bool IsActive { get; set; }
 
         public void LoadContent(ContentManager content)
         {
@@ -63,7 +63,7 @@
             _startMenuButtonTexture = _content.Load<Texture2D>("Assets/GUI/Buttons/menubutton");
         }
 
-        public override void Update(GameTime gameTime)
+        public void Update(GameTime gameTime)
         {
             if (LudosGame.GameIsPaused && MenuType != MenuTypes.PauseMenu)
             {
@@ -81,11 +81,11 @@
             }
         }
 
-        public override void PostUpdate(GameTime gameTime)
+        public void PostUpdate(GameTime gameTime)
         {
         }
 
-        public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+        public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             if (MenuType == MenuTypes.ContentBased)
             {

@@ -5,6 +5,7 @@
     using Ludos.Engine.Graphics;
     using Ludos.Engine.Managers;
     using Ludos.Engine.Model;
+    using Ludos.Engine.Utilities;
     using Ludos.Engine.Utilities.Debug;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Content;
@@ -106,8 +107,6 @@
             DrawTmxMap(spriteBatch);
             DrawPlayer(spriteBatch);
 
-            _debugManager.DrawScaledContent(spriteBatch);
-
             if (_tmxManager.CurrentMapName != "Level3")
             {
                 spriteBatch.Draw(_playerTexture16x16, _camera.VisualizeCordinates(_player.Bounds), Color.White);
@@ -116,6 +115,8 @@
             {
                 _animationManager.Draw(spriteBatch);
             }
+
+            _debugManager.DrawScaledContent(spriteBatch);
         }
 
         public void DrawDebugPanel(GameTime gameTime, SpriteBatch spriteBatch)
@@ -129,7 +130,14 @@
 
             foreach (var platform in _tmxManager.MovingPlatforms)
             {
-                spriteBatch.Draw(_platform, _camera.VisualizeCordinates(platform.Bounds), Color.White);
+                if (_tmxManager.CurrentMapName == "Level3")
+                {
+                    spriteBatch.Draw(_platform, _camera.VisualizeCordinates(platform.Bounds), Color.White);
+                }
+                else
+                {
+                    _debugManager.DrawRectancgle(spriteBatch, platform.Bounds, new Color(20, 27, 63));
+                }
             }
         }
 

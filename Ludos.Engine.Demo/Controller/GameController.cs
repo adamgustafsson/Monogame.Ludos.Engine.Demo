@@ -18,7 +18,7 @@
         public GameController(ContentManager content, GameServiceContainer services)
         {
             _tmxManager = services.GetService<TMXManager>();
-            _player = new LudosPlayer(new Vector2(500, 280), new Point(16, 16), services) { HorizontalAcceleration = 0.035f };
+            _player = new LudosPlayer(new Vector2(700, 280), new Point(16, 16), services) { HorizontalAcceleration = 0.035f };
             _gameView = new View.GameView(content, services.GetService<InputManager>(), _tmxManager, _player);
             _currentMap = _tmxManager.CurrentMapName;
         }

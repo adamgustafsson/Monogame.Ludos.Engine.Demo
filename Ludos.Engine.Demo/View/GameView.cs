@@ -57,11 +57,13 @@
                         Scale = 1.5f,
                     }
                 },
-                { Actor.State.Jumping,  new Animation(_playerSprite, _player, startFrame: new Point(2, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.Falling,  new Animation(_playerSprite, _player, startFrame: new Point(3, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.WallClinging,  new Animation(_playerSprite, _player, startFrame: new Point(4, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.Climbing,  new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 2) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.ClimbingIdle,  new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.Jumping, new Animation(_playerSprite, _player, startFrame: new Point(2, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.Falling, new Animation(_playerSprite, _player, startFrame: new Point(3, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.WallClinging, new Animation(_playerSprite, _player, startFrame: new Point(4, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.Climbing, new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 2) { PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.ClimbingIdle, new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.Swimming, new Animation(_playerSprite, _player, startFrame: new Point(5, 3), playerSpriteFrameSize, frameCount: 2) { FrameSpeed = 0.5f, PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.Diving, new Animation(_playerSprite, _player, startFrame: new Point(7, 3), playerSpriteFrameSize, frameCount: 2) { FrameSpeed = 0.5f, PositionOffset = smallOffset, Scale = 1.5f } },
             };
 
             _animationManager = new AnimationManager(_camera, animations);

@@ -52,8 +52,8 @@
 
             GameStates = new IGameState[]
             {
-                new GameController(Content, Services) { IsActive = true },
-                new MenuController(Content, Services), // { IsActive = true },
+                new GameController(Content, Services), //{ IsActive = true },
+                new MenuController(Content, Services) { IsActive = true },
             };
 
             Map.InitObjectDrawing(GraphicsDevice);

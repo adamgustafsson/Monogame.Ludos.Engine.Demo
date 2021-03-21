@@ -16,9 +16,9 @@
         private Texture2D _startMenuButtonTexture;
         private SpriteFont _buttonFont;
         private SpriteFont _headerFont;
-        private List<GUIComponent> _contentBasedStartMenuComponents;
-        private List<GUIComponent> _proceduralStartMenuComponents;
-        private List<GUIComponent> _contentBasedPauseMenuComponents;
+        private List<TextureComponent> _contentBasedStartMenuComponents;
+        private List<TextureComponent> _proceduralStartMenuComponents;
+        private List<TextureComponent> _contentBasedPauseMenuComponents;
 
         private GraphicsDevice _graphics;
         private ContentManager _content;
@@ -130,7 +130,7 @@
             buttonB.Click += StartLevelTwo_Click;
             buttonC.Click += ChangeMenuType_Click;
 
-            _contentBasedStartMenuComponents = new List<GUIComponent>() { buttonA, buttonB, buttonC };
+            _contentBasedStartMenuComponents = new List<TextureComponent>() { buttonA, buttonB, buttonC };
 
             var pausemenuBackground = new ProceduralTexture(_graphics, new Rectangle(0, 0, 480, 270))
             {
@@ -153,12 +153,12 @@
             exitButton.Click += Exit_Click;
             exitButton.Text = "Exit game";
 
-            _contentBasedPauseMenuComponents = new List<GUIComponent>() { pausemenuBackground, unpauseButton, quitButton, exitButton };
+            _contentBasedPauseMenuComponents = new List<TextureComponent>() { pausemenuBackground, unpauseButton, quitButton, exitButton };
         }
 
         private void LoadProceduralGeneratedComponents()
         {
-            _proceduralStartMenuComponents = new List<GUIComponent>()
+            _proceduralStartMenuComponents = new List<TextureComponent>()
             {
                 new ProceduralTexture(_graphics, new Rectangle(-1, -1, 242, 137))
                 {
@@ -213,10 +213,10 @@
             proceduralButtonB.Click += StartLevelTwo_Click;
             proceduralButtonC.Click += ChangeMenuType_Click;
 
-            _proceduralStartMenuComponents.AddRange(new List<GUIComponent>() { proceduralButtonA, proceduralButtonB, proceduralButtonC });
+            _proceduralStartMenuComponents.AddRange(new List<TextureComponent>() { proceduralButtonA, proceduralButtonB, proceduralButtonC });
         }
 
-        private List<GUIComponent> GetCurrentGuiComponents()
+        private List<TextureComponent> GetCurrentGuiComponents()
         {
             return MenuType switch
             {

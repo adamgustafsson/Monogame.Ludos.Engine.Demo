@@ -20,23 +20,12 @@
         private readonly TMXManager _tmxManager;
         private readonly DebugManager _debugManager;
 
-        private Texture2D _gameBackgroundTexture;
         private Texture2D _playerTexture16x16;
         private Texture2D _playerTexture16x24;
         private Texture2D _platform;
         private Texture2D _playerSprite;
-
-        private Texture2D _paralaxBg1;
-        private Texture2D _paralaxBg2;
-        private Texture2D _paralaxBg3;
-        private Texture2D _paralaxBg4;
-        private Texture2D _paralaxBg5;
-
-        private ScrollingTexture _st1;
-        private ScrollingTexture _st2;
-        private ScrollingTexture _st3;
-        private ScrollingTexture _st4;
-        private ScrollingTexture _st5;
+        private Texture2D _staticBackground;
+        private List<ScrollingTexture> _parallaxBackgrounds;
 
         private AnimationManager _animationManager;
 
@@ -83,26 +72,19 @@
 
         public void LoadContent()
         {
-            _gameBackgroundTexture = _content.Load<Texture2D>("Levels/Level1/TileImages/background");
+            _staticBackground = _content.Load<Texture2D>("Levels/Level1/TileImages/background");
             _playerTexture16x16 = _content.Load<Texture2D>("Assets/player");
             _playerTexture16x24 = _content.Load<Texture2D>("Assets/player16x24");
             _platform = _content.Load<Texture2D>("Assets/platform");
             _playerSprite = _content.Load<Texture2D>("Assets/Player/player-spritesheet");
 
-            _paralaxBg1 = _content.Load<Texture2D>("Assets/Parallax/bg1");
-            _st1 = new ScrollingTexture(_paralaxBg1, _camera, new Vector2(0, 0), offsetY: 120);
-
-            _paralaxBg2 = _content.Load<Texture2D>("Assets/Parallax/bg2");
-            _st2 = new ScrollingTexture(_paralaxBg2, _camera, new Vector2(0.25f, 0.25f), offsetY: 50);
-
-            _paralaxBg3 = _content.Load<Texture2D>("Assets/Parallax/bg3");
-            _st3 = new ScrollingTexture(_paralaxBg3, _camera, new Vector2(0.50f, 0.50f), offsetY: 50);
-
-            _paralaxBg4 = _content.Load<Texture2D>("Assets/Parallax/bg4");
-            _st4 = new ScrollingTexture(_paralaxBg4, _camera, new Vector2(0.75f, 0.75f), offsetY: 100);
-
-            _paralaxBg5 = _content.Load<Texture2D>("Assets/Parallax/bg5");
-            _st5 = new ScrollingTexture(_paralaxBg5, _camera, new Vector2(1, 1), offsetY: 100);
+            _parallaxBackgrounds = new List<ScrollingTexture>
+            {
+                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg1"), _camera, new Vector2(0, 0), offsetY: 0),
+                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg2"), _camera, new Vector2(0.25f, 0.25f), offsetY: 25),
+                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg3"), _camera, new Vector2(0.50f, 0.50f), offsetY: 30),
+                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg4"), _camera, new Vector2(0.75f, 0.75f), offsetY: 35),
+            };
         }
 
         public void Update(GameTime gameTime)
@@ -115,13 +97,13 @@
             if (!LudosGame.GameIsPaused)
             {
                 _camera.Update(gameTime);
-                _debugManager.Update(gameTime);
 
-                _st1.Update(gameTime);
-                _st2.Update(gameTime);
-                _st3.Update(gameTime);
-                _st4.Update(gameTime);
-                _st5.Update(gameTime);
+                foreach (var bg in _parallaxBackgrounds)
+                {
+                    bg.Update(gameTime);
+                }
+
+                _debugManager.Update(gameTime);
             }
 
             LudosGame.GameStates[States.Menu].IsActive = LudosGame.GameIsPaused;
@@ -136,15 +118,14 @@
         {
             if (_tmxManager.CurrentMapName != "Level3")
             {
-                spriteBatch.Draw(_gameBackgroundTexture, Vector2.Zero, Color.White);
+                spriteBatch.Draw(_staticBackground, Vector2.Zero, Color.White);
             }
             else
             {
-                _st1.Draw(gameTime, spriteBatch);
-                _st2.Draw(gameTime, spriteBatch);
-                _st3.Draw(gameTime, spriteBatch);
-                _st4.Draw(gameTime, spriteBatch);
-                _st5.Draw(gameTime, spriteBatch);
+                foreach (var bg in _parallaxBackgrounds)
+                {
+                    bg.Draw(gameTime, spriteBatch);
+                }
             }
 
             DrawTmxMap(spriteBatch);

@@ -5,6 +5,7 @@
     using Ludos.Engine.Core;
     using Ludos.Engine.Graphics;
     using Ludos.Engine.Input;
+    using Ludos.Engine.Sound;
     using Ludos.Engine.Tmx;
     using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
@@ -18,6 +19,7 @@
         private readonly Camera2D _camera;
         private readonly InputManager _inputManager;
         private readonly TMXManager _tmxManager;
+        private readonly SoundManager _soundManager;
         private readonly DebugManager _debugManager;
 
         private Texture2D _playerTexture16x16;
@@ -34,6 +36,13 @@
             _content = content;
             _inputManager = inputManage;
             _tmxManager = tmxManager;
+            _soundManager = new SoundManager(content, new SoundInfo
+            {
+                SoundEffectsPath = "Assets/Sound/Effects",
+                SoundEffectTitles = new List<string>() { "Jump1", "Splash"},
+                SoundTracksPath = "Assets/Sound/Tracks",
+                SoundTracksTitles = new List<string>() { "Arcade-Heroes" },
+            });
             _player = ludosPlayer;
 
             var graphicsDevice2 = ((IGraphicsDeviceService)content.ServiceProvider.GetService(typeof(IGraphicsDeviceService))).GraphicsDevice;
@@ -81,9 +90,9 @@
             _parallaxBackgrounds = new List<ScrollingTexture>
             {
                 new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg1"), _camera, new Vector2(0, 0), offsetY: 0),
-                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg2"), _camera, new Vector2(0.25f, 0.25f), offsetY: 25),
-                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg3"), _camera, new Vector2(0.50f, 0.50f), offsetY: 30),
-                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg4"), _camera, new Vector2(0.75f, 0.75f), offsetY: 35),
+                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg2"), _camera, new Vector2(0.25f, 0.25f), offsetY: 65),
+                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg3"), _camera, new Vector2(0.50f, 0.50f), offsetY: 80),
+                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg4"), _camera, new Vector2(0.75f, 0.75f), offsetY: 85),
             };
         }
 
@@ -111,6 +120,17 @@
             if (_tmxManager.CurrentMapName == "Level3" && !LudosGame.GameIsPaused)
             {
                 _animationManager.Update(gameTime);
+                _soundManager.PlaySoundTrack("Arcade-Heroes");
+            }
+
+            if (_player.CurrentState == Actor.State.Jumping && _player.PreviousState != Actor.State.Jumping)
+            {
+                _soundManager.PlaySound(0);
+            }
+
+            if (_player.CurrentState == Actor.State.Swimming && _player.PreviousState != Actor.State.Swimming)
+            {
+                _soundManager.PlaySound(1);
             }
         }
 

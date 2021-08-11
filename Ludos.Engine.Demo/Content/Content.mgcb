@@ -277,6 +277,30 @@
 /processorParam:TextureFormat=Color
 /build:Assets/player16x24.png
 
+#begin Assets/Sound/Effects/Jump1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Assets/Sound/Effects/Jump1.wav
+
+#begin Assets/Sound/Effects/Splash.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Assets/Sound/Effects/Splash.wav
+
+#begin Assets/Sound/Tracks/Arcade-Heroes.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Assets/Sound/Tracks/Arcade-Heroes.mp3
+
+#begin Assets/Sound/Tracks/Track02.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Assets/Sound/Tracks/Track02.mp3
+
 #begin Fonts/pixel.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor

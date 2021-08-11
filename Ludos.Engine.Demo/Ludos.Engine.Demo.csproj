@@ -45,4 +45,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Ludos.Engine\Ludos.Engine\Ludos.Engine.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Content\Assets\Sound\Effects\" />
+    <Folder Include="Content\Assets\Sound\Tracks\" />
+  </ItemGroup>
 </Project>

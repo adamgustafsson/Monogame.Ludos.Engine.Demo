@@ -6,6 +6,7 @@
     using Ludos.Engine.Graphics;
     using Ludos.Engine.Input;
     using Ludos.Engine.Tmx;
+    using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Content;
     using Microsoft.Xna.Framework.Graphics;
@@ -21,7 +22,6 @@
         private List<TextureComponent> _contentBasedPauseMenuComponents;
 
         private GraphicsDevice _graphics;
-        private ContentManager _content;
         private InputManager _inputManager;
         private TMXManager _tmxManager;
 
@@ -31,17 +31,16 @@
         private string _buttonText2 = "Complete demo";
         private string _buttonText3 = "Toggle procedural menu";
 
-        public MenuController(ContentManager content, GameServiceContainer services)
+        public MenuController(GameServiceContainer services)
         {
-            _content = content;
-            _graphics = ((IGraphicsDeviceService)content.ServiceProvider.GetService(typeof(IGraphicsDeviceService))).GraphicsDevice;
             _inputManager = services.GetService<InputManager>();
             _tmxManager = services.GetService<TMXManager>();
+            var contentManager = services.GetService<ContentManager>();
+            _graphics = contentManager.GetGraphicsDevice();
 
             MenuType = MenuTypes.ContentBased;
 
-            LoadContent(content);
-
+            LoadContent(contentManager);
             LoadContentBasedComponents();
             LoadProceduralGeneratedComponents();
         }
@@ -60,8 +59,8 @@
         {
             _buttonFont = content.Load<SpriteFont>("Fonts/pixel");
             _headerFont = content.Load<SpriteFont>("Fonts/seguibl");
-            _startMenuBackgroundTexture = _content.Load<Texture2D>("Assets/GUI/Textures/startmenu-bg");
-            _startMenuButtonTexture = _content.Load<Texture2D>("Assets/GUI/Buttons/menubutton");
+            _startMenuBackgroundTexture = content.Load<Texture2D>("Assets/GUI/Textures/startmenu-bg");
+            _startMenuButtonTexture = content.Load<Texture2D>("Assets/GUI/Buttons/menubutton");
         }
 
         public void Update(GameTime gameTime)

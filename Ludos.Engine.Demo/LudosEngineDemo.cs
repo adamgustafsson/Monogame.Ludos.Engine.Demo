@@ -47,13 +47,11 @@
                     { InputName.Select, new Input { Key = Keys.LeftShift, Button = Buttons.LeftShoulder } },
                 };
 
-            InitializeTmxManager(tmxMapInfoList);
-            InitializeInputManager(userControls);
-
+            InitializeGameServices(tmxMapInfoList, userControls);
             GameStates = new IGameState[]
             {
-                new GameController(Content, Services), //{ IsActive = true },
-                new MenuController(Content, Services) { IsActive = true },
+                new GameController(Services) { IsActive = true },
+                new MenuController(Services),// { IsActive = true },
             };
 
             Map.InitObjectDrawing(GraphicsDevice);

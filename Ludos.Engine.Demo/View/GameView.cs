@@ -5,6 +5,7 @@
     using Ludos.Engine.Core;
     using Ludos.Engine.Graphics;
     using Ludos.Engine.Input;
+    using Ludos.Engine.Particles;
     using Ludos.Engine.Sound;
     using Ludos.Engine.Tmx;
     using Ludos.Engine.Utilities;
@@ -14,7 +15,6 @@
 
     public class GameView
     {
-        private readonly ContentManager _content;
         private readonly LudosPlayer _player;
         private readonly Camera2D _camera;
         private readonly InputManager _inputManager;
@@ -29,70 +29,50 @@
         private Texture2D _staticBackground;
         private List<ScrollingTexture> _parallaxBackgrounds;
 
-        private AnimationManager _animationManager;
+        private SpriteFont _debugToolFont;
 
-        public GameView(ContentManager content, InputManager inputManage, TMXManager tmxManager, LudosPlayer ludosPlayer)
+        private AnimationManager _animationManager;
+        private ParticleManager _particleManager;
+
+        public GameView(GameServiceContainer services, LudosPlayer ludosPlayer)
         {
-            _content = content;
-            _inputManager = inputManage;
-            _tmxManager = tmxManager;
-            _soundManager = new SoundManager(content, new SoundInfo
+            var contentManager = services.GetService<ContentManager>();
+            var graphicsDevice = contentManager.GetGraphicsDevice();
+
+            _player = ludosPlayer;
+            _camera = new Camera2D(graphicsDevice, _player, cameraScale: 4);
+
+            LoadContent(contentManager);
+
+            _inputManager = services.GetService<InputManager>();
+            _tmxManager = services.GetService<TMXManager>();
+            _animationManager = new AnimationManager(_camera, SetUpPlayerAnimations());
+            _particleManager = new ParticleManager(graphicsDevice, _camera, SetUpParticles(), 1);
+            _debugManager = new DebugManager(services, _camera, _player, _debugToolFont);
+            _soundManager = new SoundManager(contentManager, new SoundInfo
             {
                 SoundEffectsPath = "Assets/Sound/Effects",
-                SoundEffectTitles = new List<string>() { "Jump1", "Splash"},
+                SoundEffectTitles = new List<string>() { "Jump1", "Splash" },
                 SoundTracksPath = "Assets/Sound/Tracks",
                 SoundTracksTitles = new List<string>() { "Arcade-Heroes" },
             });
-            _player = ludosPlayer;
-
-            var graphicsDevice2 = ((IGraphicsDeviceService)content.ServiceProvider.GetService(typeof(IGraphicsDeviceService))).GraphicsDevice;
-            _camera = new Camera2D(graphicsDevice2, _player, cameraScale: 4);
-            _debugManager = new DebugManager(_content, graphicsDevice2, _inputManager, _camera, _tmxManager, _player);
-
-            LoadContent();
-
-            var playerSpriteFrameSize = new Point(10, 5);
-            var largeOffset = new Vector2(-5, -12);
-            var smallOffset = new Vector2(0, -11);
-
-            var animations = new Dictionary<Actor.State, Animation>()
-            {
-                { Actor.State.Idle, new Animation(_playerSprite, _player, startFrame: new Point(0, 0), playerSpriteFrameSize, frameCount: 4) { PositionOffset = smallOffset, Scale = 1.5f } },
-                {
-                    Actor.State.Running, new Animation(_playerSprite, _player, startFrame: new Point(0, 1), playerSpriteFrameSize, frameCount: 10)
-                    {
-                        PositionOffset = smallOffset,
-                        UseVelocityBasedFrameSpeed = true,
-                        FrameSpeed = 5.5f,
-                        Scale = 1.5f,
-                    }
-                },
-                { Actor.State.Jumping, new Animation(_playerSprite, _player, startFrame: new Point(2, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.Falling, new Animation(_playerSprite, _player, startFrame: new Point(3, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.WallClinging, new Animation(_playerSprite, _player, startFrame: new Point(4, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.Climbing, new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 2) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.ClimbingIdle, new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.Swimming, new Animation(_playerSprite, _player, startFrame: new Point(5, 3), playerSpriteFrameSize, frameCount: 2) { FrameSpeed = 0.5f, PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.Diving, new Animation(_playerSprite, _player, startFrame: new Point(7, 3), playerSpriteFrameSize, frameCount: 2) { FrameSpeed = 0.5f, PositionOffset = smallOffset, Scale = 1.5f } },
-            };
-
-            _animationManager = new AnimationManager(_camera, animations);
         }
 
-        public void LoadContent()
+        public void LoadContent(ContentManager content)
         {
-            _staticBackground = _content.Load<Texture2D>("Levels/Level1/TileImages/background");
-            _playerTexture16x16 = _content.Load<Texture2D>("Assets/player");
-            _playerTexture16x24 = _content.Load<Texture2D>("Assets/player16x24");
-            _platform = _content.Load<Texture2D>("Assets/platform");
-            _playerSprite = _content.Load<Texture2D>("Assets/Player/player-spritesheet");
+            _staticBackground = content.Load<Texture2D>("Levels/Level1/TileImages/background");
+            _playerTexture16x16 = content.Load<Texture2D>("Assets/player");
+            _playerTexture16x24 = content.Load<Texture2D>("Assets/player16x24");
+            _platform = content.Load<Texture2D>("Assets/platform");
+            _playerSprite = content.Load<Texture2D>("Assets/Player/player-spritesheet");
+            _debugToolFont = content.Load<SpriteFont>("Fonts/Segoe");
 
             _parallaxBackgrounds = new List<ScrollingTexture>
             {
-                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg1"), _camera, new Vector2(0, 0), offsetY: 0),
-                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg2"), _camera, new Vector2(0.25f, 0.25f), offsetY: 65),
-                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg3"), _camera, new Vector2(0.50f, 0.50f), offsetY: 80),
-                new ScrollingTexture(_content.Load<Texture2D>("Assets/Parallax/Jungle/bg4"), _camera, new Vector2(0.75f, 0.75f), offsetY: 85),
+                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg1"), _camera, new Vector2(0, 0), offsetY: 0),
+                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg2"), _camera, new Vector2(0.25f, 0.25f), offsetY: 65),
+                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg3"), _camera, new Vector2(0.50f, 0.50f), offsetY: 80),
+                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg4"), _camera, new Vector2(0.75f, 0.75f), offsetY: 85),
             };
         }
 
@@ -132,6 +112,8 @@
             {
                 _soundManager.PlaySound(1);
             }
+
+            _particleManager.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
         }
 
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
@@ -149,7 +131,6 @@
             }
 
             DrawTmxMap(spriteBatch);
-            DrawPlayer(spriteBatch);
 
             if (_tmxManager.CurrentMapName != "Level3")
             {
@@ -161,6 +142,7 @@
             }
 
             _debugManager.DrawScaledContent(spriteBatch);
+            //_particleManager.Draw((float)gameTime.ElapsedGameTime.TotalSeconds, spriteBatch);
         }
 
         public void DrawDebugPanel(GameTime gameTime, SpriteBatch spriteBatch)
@@ -185,8 +167,37 @@
             }
         }
 
-        private void DrawPlayer(SpriteBatch spriteBatch)
+        private Dictionary<Actor.State, Animation> SetUpPlayerAnimations()
         {
+            var playerSpriteFrameSize = new Point(10, 5);
+            var largeOffset = new Vector2(-5, -12);
+            var smallOffset = new Vector2(0, -11);
+
+            return new Dictionary<Actor.State, Animation>()
+            {
+                { Actor.State.Idle, new Animation(_playerSprite, _player, startFrame: new Point(0, 0), playerSpriteFrameSize, frameCount: 4) { PositionOffset = smallOffset, Scale = 1.5f } },
+                {
+                    Actor.State.Running, new Animation(_playerSprite, _player, startFrame: new Point(0, 1), playerSpriteFrameSize, frameCount: 10)
+                    {
+                        PositionOffset = smallOffset,
+                        UseVelocityBasedFrameSpeed = true,
+                        FrameSpeed = 5.5f,
+                        Scale = 1.5f,
+                    }
+                },
+                { Actor.State.Jumping, new Animation(_playerSprite, _player, startFrame: new Point(2, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.Falling, new Animation(_playerSprite, _player, startFrame: new Point(3, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.WallClinging, new Animation(_playerSprite, _player, startFrame: new Point(4, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.Climbing, new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 2) { PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.ClimbingIdle, new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.Swimming, new Animation(_playerSprite, _player, startFrame: new Point(5, 3), playerSpriteFrameSize, frameCount: 2) { FrameSpeed = 0.5f, PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.Diving, new Animation(_playerSprite, _player, startFrame: new Point(7, 3), playerSpriteFrameSize, frameCount: 2) { FrameSpeed = 0.5f, PositionOffset = smallOffset, Scale = 1.5f } },
+            };
+        }
+
+        private Dictionary<string, List<Vector2>> SetUpParticles()
+        {
+            return new Dictionary<string, List<Vector2>>() { { typeof(FireParticle).Name, new List<Vector2>() { _player.Position, _player.Position + new Vector2(20, 0) } }, };
         }
     }
 }

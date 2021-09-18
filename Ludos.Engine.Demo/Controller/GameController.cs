@@ -15,12 +15,14 @@
         private readonly View.GameView _gameView;
         private string _currentMap;
 
-        public GameController(ContentManager content, GameServiceContainer services)
+        public GameController(GameServiceContainer services)
         {
             _tmxManager = services.GetService<TMXManager>();
+
             var startPos = new Vector2(100, 280);
+
             _player = new LudosPlayer(startPos, new Point(16, 16), services) { HorizontalAcceleration = 0.035f };
-            _gameView = new View.GameView(content, services.GetService<InputManager>(), _tmxManager, _player);
+            _gameView = new View.GameView(services, _player);
             _currentMap = _tmxManager.CurrentMapName;
         }
 

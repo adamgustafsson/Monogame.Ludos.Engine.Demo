@@ -73,6 +73,18 @@
 /processorParam:TextureFormat=Color
 /build:Assets/GUI/Textures/startmenu-bg.png
 
+#begin Assets/Light.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Assets/Light.png
+
 #begin Assets/Parallax/bg1.png
 /importer:TextureImporter
 /processor:TextureProcessor

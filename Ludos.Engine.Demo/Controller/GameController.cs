@@ -12,17 +12,19 @@
     {
         private readonly TMXManager _tmxManager;
         private readonly LudosPlayer _player;
-        private readonly View.GameView _gameView;
         private string _currentMap;
+        private View.GameView _gameView;
+        private GameServiceContainer _services;
 
         public GameController(GameServiceContainer services)
         {
-            _tmxManager = services.GetService<TMXManager>();
+            _services = services;
+            _tmxManager = _services.GetService<TMXManager>();
 
             var startPos = new Vector2(100, 280);
 
-            _player = new LudosPlayer(startPos, new Point(16, 16), services) { HorizontalAcceleration = 0.035f };
-            _gameView = new View.GameView(services, _player);
+            _player = new LudosPlayer(startPos, new Point(16, 16), _services) { HorizontalAcceleration = 0.035f };
+            _gameView = new View.GameView(_services, _player);
             _currentMap = _tmxManager.CurrentMapName;
         }
 
@@ -34,6 +36,7 @@
             {
                 _player.ResetToStartPosition();
                 _currentMap = _tmxManager.CurrentMapName;
+                _gameView = new View.GameView(_services, _player);
             }
 
             if (!LudosGame.GameIsPaused)

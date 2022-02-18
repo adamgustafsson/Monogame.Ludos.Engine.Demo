@@ -1,6 +1,7 @@
 ﻿namespace LudosEngineDemo.View
 {
     using System.Collections.Generic;
+    using System.Linq;
     using Ludos.Engine.Actors;
     using Ludos.Engine.Core;
     using Ludos.Engine.Graphics;
@@ -47,7 +48,7 @@
             _inputManager = services.GetService<InputManager>();
             _tmxManager = services.GetService<TMXManager>();
             _animationManager = new AnimationManager(_camera, SetUpPlayerAnimations());
-            _particleManager = new ParticleManager(graphicsDevice, _camera, SetUpParticles(), 1);
+            _particleManager = new ParticleManager(graphicsDevice, _camera, SetUpParticles());
             _debugManager = new DebugManager(services, _camera, _player, _debugToolFont);
             _soundManager = new SoundManager(contentManager, new SoundInfo
             {
@@ -56,6 +57,14 @@
                 SoundTracksPath = "Assets/Sound/Tracks",
                 SoundTracksTitles = new List<string>() { "Arcade-Heroes" },
             });
+
+            _soundManager.MusicEnabled = false;
+            _soundManager.SoundEnabled = false;
+        }
+
+        ~GameView()
+        {
+            _soundManager.StopSoundTrack();
         }
 
         public void LoadContent(ContentManager content)
@@ -70,9 +79,9 @@
             _parallaxBackgrounds = new List<ScrollingTexture>
             {
                 new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg1"), _camera, new Vector2(0, 0), offsetY: 0),
-                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg2"), _camera, new Vector2(0.25f, 0.25f), offsetY: 65),
-                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg3"), _camera, new Vector2(0.50f, 0.50f), offsetY: 80),
-                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg4"), _camera, new Vector2(0.75f, 0.75f), offsetY: 85),
+                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg2"), _camera, new Vector2(0.25f, 0.25f), offsetY: 35),
+                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg3"), _camera, new Vector2(0.50f, 0.50f), offsetY: 50),
+                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg4"), _camera, new Vector2(0.75f, 0.75f), offsetY: 55),
             };
         }
 
@@ -101,19 +110,19 @@
             {
                 _animationManager.Update(gameTime);
                 _soundManager.PlaySoundTrack("Arcade-Heroes");
-            }
 
-            if (_player.CurrentState == Actor.State.Jumping && _player.PreviousState != Actor.State.Jumping)
-            {
-                _soundManager.PlaySound(0);
-            }
+                if (_player.CurrentState == Actor.State.Jumping && _player.PreviousState != Actor.State.Jumping)
+                {
+                    _soundManager.PlaySound(0);
+                }
 
-            if (_player.CurrentState == Actor.State.Swimming && _player.PreviousState != Actor.State.Swimming)
-            {
-                _soundManager.PlaySound(1);
-            }
+                if (_player.CurrentState == Actor.State.Swimming && _player.PreviousState != Actor.State.Swimming)
+                {
+                    _soundManager.PlaySound(1);
+                }
 
-            _particleManager.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+                _particleManager.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+            }
         }
 
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
@@ -132,6 +141,8 @@
 
             DrawTmxMap(spriteBatch);
 
+            _particleManager.Draw((float)gameTime.ElapsedGameTime.TotalSeconds, spriteBatch);
+
             if (_tmxManager.CurrentMapName != "Level3")
             {
                 spriteBatch.Draw(_playerTexture16x16, _camera.VisualizeCordinates(_player.Bounds), Color.White);
@@ -142,7 +153,6 @@
             }
 
             _debugManager.DrawScaledContent(spriteBatch);
-            //_particleManager.Draw((float)gameTime.ElapsedGameTime.TotalSeconds, spriteBatch);
         }
 
         public void DrawDebugPanel(GameTime gameTime, SpriteBatch spriteBatch)
@@ -195,9 +205,31 @@
             };
         }
 
-        private Dictionary<string, List<Vector2>> SetUpParticles()
+        private List<ParticleSystemDefinition> SetUpParticles()
         {
-            return new Dictionary<string, List<Vector2>>() { { typeof(FireParticle).Name, new List<Vector2>() { _player.Position, _player.Position + new Vector2(20, 0) } }, };
+            var particlePositions = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerParticles, _tmxManager.GetCurrentMapBounds()).Where(x => x.Type == "torch").Select(x => x.Bounds.Center.ToVector2() - new Vector2(1, 0.5f)).ToList();
+
+            var fireParticleSystemDef = new ParticleSystemDefinition
+            {
+                ParticleType = typeof(FireParticle),
+                Amount = 25,
+                Positions = particlePositions,
+                Scale = 1.3f,
+                DoRepeat = true,
+                Type = ParticleSystemType.StaticPositions,
+            };
+
+            var explosionParticleSystemDef = new ParticleSystemDefinition
+            {
+                ParticleType = typeof(ExplosionParticle),
+                Amount = 150,
+                Positions = new List<Vector2>() { Vector2.Zero },
+                Scale = 1f,
+                DoRepeat = false,
+                Type = ParticleSystemType.RenderOnTrigger,
+            };
+
+            return new List<ParticleSystemDefinition>() { fireParticleSystemDef, explosionParticleSystemDef };
         }
     }
 }

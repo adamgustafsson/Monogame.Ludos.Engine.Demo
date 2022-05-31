@@ -79,9 +79,9 @@
             _parallaxBackgrounds = new List<ScrollingTexture>
             {
                 new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg1"), _camera, new Vector2(0, 0), offsetY: 0),
-                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg2"), _camera, new Vector2(0.25f, 0.25f), offsetY: 35),
-                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg3"), _camera, new Vector2(0.50f, 0.50f), offsetY: 50),
-                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg4"), _camera, new Vector2(0.75f, 0.75f), offsetY: 55),
+                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg2"), _camera, new Vector2(0.25f), offsetY: 0),
+                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg3"), _camera, new Vector2(0.50f), offsetY: 10),
+                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg4"), _camera, new Vector2(0.75f), offsetY: 20),
             };
         }
 

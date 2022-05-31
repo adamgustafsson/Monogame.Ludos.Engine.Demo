@@ -29,8 +29,8 @@
 
             var tmxMapInfoList = new List<TMXMapInfo>()
             {
-                new TMXMapInfo { TmxFilePath = "Levels/Level1/Level1.tmx", ResourcePath = "Levels/Level1/TileImages", NonDefaultLayerNames = null, MovingPlatformSize = new Point(48, 16) },
-                new TMXMapInfo { TmxFilePath = "Levels/Level2/Level2.tmx", ResourcePath = "Levels/Level2/TileImages", NonDefaultLayerNames = null, MovingPlatformSize = new Point(48, 16) },
+                //new TMXMapInfo { TmxFilePath = "Levels/Level1/Level1.tmx", ResourcePath = "Levels/Level1/TileImages", NonDefaultLayerNames = null, MovingPlatformSize = new Point(48, 16) },
+                //new TMXMapInfo { TmxFilePath = "Levels/Level2/Level2.tmx", ResourcePath = "Levels/Level2/TileImages", NonDefaultLayerNames = null, MovingPlatformSize = new Point(48, 16) },
                 new TMXMapInfo { TmxFilePath = "Levels/Level3/Level3.tmx", ResourcePath = "Levels/Level3/TileImages", NonDefaultLayerNames = null, MovingPlatformSize = new Point(48, 16) },
             };
 

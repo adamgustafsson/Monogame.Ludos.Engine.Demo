@@ -25,6 +25,7 @@
 
         private Texture2D _playerTexture16x16;
         private Texture2D _playerTexture16x24;
+        private Texture2D _playerTexture16x32;
         private Texture2D _platform;
         private Texture2D _playerSprite;
         private Texture2D _staticBackground;
@@ -72,6 +73,7 @@
             _staticBackground = content.Load<Texture2D>("Levels/Level1/TileImages/background");
             _playerTexture16x16 = content.Load<Texture2D>("Assets/player");
             _playerTexture16x24 = content.Load<Texture2D>("Assets/player16x24");
+            _playerTexture16x32 = content.Load<Texture2D>("Assets/player16x32");
             _platform = content.Load<Texture2D>("Assets/platform");
             _playerSprite = content.Load<Texture2D>("Assets/Player/player-spritesheet");
             _debugToolFont = content.Load<SpriteFont>("Fonts/Segoe");
@@ -79,9 +81,9 @@
             _parallaxBackgrounds = new List<ScrollingTexture>
             {
                 new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg1"), _camera, new Vector2(0, 0), offsetY: 0),
-                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg2"), _camera, new Vector2(0.25f), offsetY: 0),
-                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg3"), _camera, new Vector2(0.50f), offsetY: 10),
-                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg4"), _camera, new Vector2(0.75f), offsetY: 20),
+                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg2"), _camera, new Vector2(0.25f), offsetY: 20),
+                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg3"), _camera, new Vector2(0.50f), offsetY: 45),
+                new ScrollingTexture(content.Load<Texture2D>("Assets/Parallax/Jungle/bg4"), _camera, new Vector2(0.75f), offsetY: 65),
             };
         }
 
@@ -145,7 +147,8 @@
 
             if (_tmxManager.CurrentMapName != "Level3")
             {
-                spriteBatch.Draw(_playerTexture16x16, _camera.VisualizeCordinates(_player.Bounds), Color.White);
+                var ptexture = _player.Bounds.Height <= 16 ? _playerTexture16x16 : (_player.Bounds.Height > 24 ? _playerTexture16x32 : _playerTexture16x24);
+                spriteBatch.Draw(ptexture, _camera.VisualizeCordinates(_player.Bounds), Color.White);
             }
             else
             {

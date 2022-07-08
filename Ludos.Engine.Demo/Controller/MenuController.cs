@@ -5,7 +5,7 @@
     using Ludos.Engine.Core;
     using Ludos.Engine.Graphics;
     using Ludos.Engine.Input;
-    using Ludos.Engine.Tmx;
+    using Ludos.Engine.Level;
     using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Content;
@@ -23,7 +23,7 @@
 
         private GraphicsDevice _graphics;
         private InputManager _inputManager;
-        private TMXManager _tmxManager;
+        private LevelManager _tmxManager;
 
         private MenuTypes _prevMenuType;
 
@@ -34,7 +34,7 @@
         public MenuController(GameServiceContainer services)
         {
             _inputManager = services.GetService<InputManager>();
-            _tmxManager = services.GetService<TMXManager>();
+            _tmxManager = services.GetService<LevelManager>();
             var contentManager = services.GetService<ContentManager>();
             _graphics = contentManager.GetGraphicsDevice();
 

@@ -2,13 +2,14 @@
 {
     using System.Collections.Generic;
     using System.Linq;
+    using global::LudosEngineDemo.Model;
     using Ludos.Engine.Actors;
     using Ludos.Engine.Core;
     using Ludos.Engine.Graphics;
     using Ludos.Engine.Input;
+    using Ludos.Engine.Level;
     using Ludos.Engine.Particles;
     using Ludos.Engine.Sound;
-    using Ludos.Engine.Tmx;
     using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Content;
@@ -19,13 +20,14 @@
         private readonly LudosPlayer _player;
         private readonly Camera2D _camera;
         private readonly InputManager _inputManager;
-        private readonly TMXManager _tmxManager;
+        private readonly LevelManager _tmxManager;
         private readonly SoundManager _soundManager;
         private readonly DebugManager _debugManager;
 
         private Texture2D _playerTexture16x16;
         private Texture2D _playerTexture16x24;
         private Texture2D _playerTexture16x32;
+        private Texture2D _gameObjectTexture;
         private Texture2D _platform;
         private Texture2D _playerSprite;
         private Texture2D _staticBackground;
@@ -36,18 +38,21 @@
         private AnimationManager _animationManager;
         private ParticleManager _particleManager;
 
-        public GameView(GameServiceContainer services, LudosPlayer ludosPlayer)
+        private GameModel _gameModel;
+
+        public GameView(GameServiceContainer services, LudosPlayer ludosPlayer, GameModel gameModel)
         {
             var contentManager = services.GetService<ContentManager>();
             var graphicsDevice = contentManager.GetGraphicsDevice();
 
             _player = ludosPlayer;
             _camera = new Camera2D(graphicsDevice, _player, cameraScale: 4);
+            _gameModel = gameModel;
 
             LoadContent(contentManager);
 
             _inputManager = services.GetService<InputManager>();
-            _tmxManager = services.GetService<TMXManager>();
+            _tmxManager = services.GetService<LevelManager>();
             _animationManager = new AnimationManager(_camera, SetUpPlayerAnimations());
             _particleManager = new ParticleManager(graphicsDevice, _camera, SetUpParticles());
             _debugManager = new DebugManager(services, _camera, _player, _debugToolFont);
@@ -74,6 +79,7 @@
             _playerTexture16x16 = content.Load<Texture2D>("Assets/player");
             _playerTexture16x24 = content.Load<Texture2D>("Assets/player16x24");
             _playerTexture16x32 = content.Load<Texture2D>("Assets/player16x32");
+            _gameObjectTexture = content.Load<Texture2D>("Assets/box");
             _platform = content.Load<Texture2D>("Assets/platform");
             _playerSprite = content.Load<Texture2D>("Assets/Player/player-spritesheet");
             _debugToolFont = content.Load<SpriteFont>("Fonts/Segoe");
@@ -149,6 +155,13 @@
             {
                 var ptexture = _player.Bounds.Height <= 16 ? _playerTexture16x16 : (_player.Bounds.Height > 24 ? _playerTexture16x32 : _playerTexture16x24);
                 spriteBatch.Draw(ptexture, _camera.VisualizeCordinates(_player.Bounds), Color.White);
+
+
+                foreach (var crate in _gameModel.Crates)
+                {
+                    spriteBatch.Draw(_gameObjectTexture, _camera.VisualizeCordinates(crate.Bounds), Color.White);
+                }
+
             }
             else
             {

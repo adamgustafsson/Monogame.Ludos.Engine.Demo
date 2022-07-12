@@ -2,27 +2,31 @@
 {
     using Ludos.Engine.Actors;
     using Ludos.Engine.Core;
-    using Ludos.Engine.Tmx;
+    using Ludos.Engine.Level;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
 
     public class GameController : IGameState
     {
-        private readonly TMXManager _tmxManager;
+        private readonly LevelManager _tmxManager;
         private readonly LudosPlayer _player;
         private string _currentMap;
         private View.GameView _gameView;
         private GameServiceContainer _services;
+        private Model.GameModel _gameModel;
 
         public GameController(GameServiceContainer services)
         {
             _services = services;
-            _tmxManager = _services.GetService<TMXManager>();
+            _tmxManager = _services.GetService<LevelManager>();
 
-            var startPos = new Vector2(100, 280);
+            var startPos = new Vector2(100, 680);
 
             _player = new LudosPlayer(startPos, new Point(16, 16), _services) { HorizontalAcceleration = 0.035f };
-            _gameView = new View.GameView(_services, _player);
+            _gameModel = new Model.GameModel(_services, _player);
+            _player.AdditionalCollisionObjects = _gameModel.Crates;
+
+            _gameView = new View.GameView(_services, _player, _gameModel);
             _currentMap = _tmxManager.CurrentMapName;
         }
 
@@ -34,12 +38,13 @@
             {
                 _player.ResetToStartPosition();
                 _currentMap = _tmxManager.CurrentMapName;
-                _gameView = new View.GameView(_services, _player);
+                _gameView = new View.GameView(_services, _player, _gameModel);
             }
 
             if (!LudosGame.GameIsPaused)
             {
                 _player.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+                _gameModel.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
             }
 
             _gameView.Update(gameTime);

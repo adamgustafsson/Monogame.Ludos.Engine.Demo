@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.4" tiledversion="1.4.2" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#b8bec2" nextlayerid="10" nextobjectid="152">
+<map version="1.4" tiledversion="1.4.2" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#b8bec2" nextlayerid="11" nextobjectid="152">
  <tileset firstgid="1" name="sp_ground" tilewidth="16" tileheight="16" tilecount="192" columns="16">
   <image source="TileImages/sp_ground.png" width="259" height="200"/>
  </tileset>
@@ -194,6 +194,7 @@
   </object>
   <object id="142" x="560" y="400" width="144" height="48"/>
  </objectgroup>
+ <objectgroup id="10" name="Camera"/>
  <objectgroup id="6" name="Water">
   <object id="143" x="560" y="352" width="144" height="48"/>
  </objectgroup>

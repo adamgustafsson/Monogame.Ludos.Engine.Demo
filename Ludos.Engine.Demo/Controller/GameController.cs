@@ -20,9 +20,10 @@
             _services = services;
             _tmxManager = _services.GetService<LevelManager>();
 
-            var startPos = new Vector2(100, 680);
+            var startPos = new Vector2(100, 100);
 
             _player = new LudosPlayer(startPos, new Point(16, 16), _services) { HorizontalAcceleration = 0.035f };
+            _player.DecelerationIsActive = false;
             _gameModel = new Model.GameModel(_services, _player);
             _player.AdditionalCollisionObjects = _gameModel.Crates;
 

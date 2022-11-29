@@ -27,7 +27,8 @@
         private Texture2D _playerTexture16x16;
         private Texture2D _playerTexture16x24;
         private Texture2D _playerTexture16x32;
-        private Texture2D _gameObjectTexture;
+        private Texture2D _coreBoxTexture;
+        private Texture2D _boxTexture;
         private Texture2D _platform;
         private Texture2D _playerSprite;
         private Texture2D _staticBackground;
@@ -79,7 +80,8 @@
             _playerTexture16x16 = content.Load<Texture2D>("Assets/player");
             _playerTexture16x24 = content.Load<Texture2D>("Assets/player16x24");
             _playerTexture16x32 = content.Load<Texture2D>("Assets/player16x32");
-            _gameObjectTexture = content.Load<Texture2D>("Assets/box");
+            _coreBoxTexture = content.Load<Texture2D>("Assets/box");
+            _boxTexture = content.Load<Texture2D>("Assets/box2");
             _platform = content.Load<Texture2D>("Assets/platform");
             _playerSprite = content.Load<Texture2D>("Assets/Player/player-spritesheet");
             _debugToolFont = content.Load<SpriteFont>("Fonts/Segoe");
@@ -151,17 +153,16 @@
 
             _particleManager.Draw((float)gameTime.ElapsedGameTime.TotalSeconds, spriteBatch);
 
+            foreach (var crate in _gameModel.Crates)
+            {
+                spriteBatch.Draw(_tmxManager.CurrentMapName != "Level3" ? _coreBoxTexture : _boxTexture, _camera.VisualizeCordinates(crate.Bounds), Color.White);
+            }
+
+
             if (_tmxManager.CurrentMapName != "Level3")
             {
                 var ptexture = _player.Bounds.Height <= 16 ? _playerTexture16x16 : (_player.Bounds.Height > 24 ? _playerTexture16x32 : _playerTexture16x24);
                 spriteBatch.Draw(ptexture, _camera.VisualizeCordinates(_player.Bounds), Color.White);
-
-
-                foreach (var crate in _gameModel.Crates)
-                {
-                    spriteBatch.Draw(_gameObjectTexture, _camera.VisualizeCordinates(crate.Bounds), Color.White);
-                }
-
             }
             else
             {
@@ -197,11 +198,11 @@
         {
             var playerSpriteFrameSize = new Point(10, 5);
             var largeOffset = new Vector2(-5, -12);
-            var smallOffset = new Vector2(0, -11);
+            var smallOffset = new Vector2(-1, -11);
 
             return new Dictionary<Actor.State, Animation>()
             {
-                { Actor.State.Idle, new Animation(_playerSprite, _player, startFrame: new Point(0, 0), playerSpriteFrameSize, frameCount: 4) { PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.Idle, new Animation(_playerSprite, _player, startFrame: new Point(0, 0), playerSpriteFrameSize, frameCount: 4, scale: 1.5f) },
                 {
                     Actor.State.Running, new Animation(_playerSprite, _player, startFrame: new Point(0, 1), playerSpriteFrameSize, frameCount: 10)
                     {
@@ -211,13 +212,13 @@
                         Scale = 1.5f,
                     }
                 },
-                { Actor.State.Jumping, new Animation(_playerSprite, _player, startFrame: new Point(2, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.Falling, new Animation(_playerSprite, _player, startFrame: new Point(3, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.WallClinging, new Animation(_playerSprite, _player, startFrame: new Point(4, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.Climbing, new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 2) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.ClimbingIdle, new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 1) { PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.Swimming, new Animation(_playerSprite, _player, startFrame: new Point(5, 3), playerSpriteFrameSize, frameCount: 2) { FrameSpeed = 0.5f, PositionOffset = smallOffset, Scale = 1.5f } },
-                { Actor.State.Diving, new Animation(_playerSprite, _player, startFrame: new Point(7, 3), playerSpriteFrameSize, frameCount: 2) { FrameSpeed = 0.5f, PositionOffset = smallOffset, Scale = 1.5f } },
+                { Actor.State.Jumping, new Animation(_playerSprite, _player, startFrame: new Point(2, 3), playerSpriteFrameSize, frameCount: 1, scale: 1.5f) },
+                { Actor.State.Falling, new Animation(_playerSprite, _player, startFrame: new Point(3, 3), playerSpriteFrameSize, frameCount: 1, scale: 1.5f) },
+                { Actor.State.WallClinging, new Animation(_playerSprite, _player, startFrame: new Point(4, 3), playerSpriteFrameSize, frameCount: 1, scale: 1.5f)},
+                { Actor.State.Climbing, new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 2, scale: 1.5f) },
+                { Actor.State.ClimbingIdle, new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 1, scale: 1.5f) },
+                { Actor.State.Swimming, new Animation(_playerSprite, _player, startFrame: new Point(5, 3), playerSpriteFrameSize, frameCount: 2, scale: 1.5f) { FrameSpeed = 0.5f } },
+                { Actor.State.Diving, new Animation(_playerSprite, _player, startFrame: new Point(7, 3), playerSpriteFrameSize, frameCount: 2, scale: 1.5f) { FrameSpeed = 0.5f, } },
             };
         }
 

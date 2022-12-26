@@ -5,6 +5,7 @@
     using Ludos.Engine.Level;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
+    using System.Collections.Generic;
 
     public class GameController : IGameState
     {
@@ -22,8 +23,14 @@
 
             var startPos = new Vector2(100, 100);
 
-            _player = new LudosPlayer(startPos, new Point(16, 16), _services) { HorizontalAcceleration = 0.035f };
+            _player = new LudosPlayer(startPos, new Point(16, 16), _services)
+            {
+                HorizontalAcceleration = 0.035f,
+            };
+
             _player.DecelerationIsActive = false;
+            _player.Abilities = new List<IAbility>() { new WallJump(), new DoubleJump(), new Swimming(_player.Gravity, _player.Speed, Swimming.DivingBehavior.DiveOnButtonPress) };
+
             _gameModel = new Model.GameModel(_services, _player);
             _player.AdditionalCollisionObjects = _gameModel.Crates;
 

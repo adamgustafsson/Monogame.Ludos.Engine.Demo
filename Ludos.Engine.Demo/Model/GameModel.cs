@@ -9,12 +9,10 @@
 
     public class GameModel
     {
-        private readonly LevelManager _levelManager;
         private readonly LudosPlayer _player;
 
         public GameModel(GameServiceContainer services, LudosPlayer player)
         {
-            _levelManager = services.GetService<LevelManager>();
             _player = player;
             LoadCrates();
         }
@@ -33,9 +31,9 @@
         {
             Crates = new List<GameObject>();
 
-            foreach (var mapObject in _levelManager.GetAllLayerObjects(TMXDefaultLayerInfo.ObjectLayerInteractableObjects).Where(x => x.Type == "crate"))
+            foreach (var mapObject in LevelManager.GetAllLayerObjects(TMXDefaultLayerInfo.ObjectLayerInteractableObjects).Where(x => x.Type == "crate"))
             {
-                Crates.Add(new GameObject(100, mapObject.Bounds.Location.ToVector2(), new Point(16, 16), _levelManager));
+                Crates.Add(new GameObject(100, mapObject.Bounds.Location.ToVector2(), new Point(16, 16)));
             }
 
             foreach (var crate in Crates)
@@ -43,6 +41,5 @@
                 crate.AdditionalCollisionObjects = Crates.Where(x => x.Position != crate.Position).ToList();
             }
         }
-
     }
 }

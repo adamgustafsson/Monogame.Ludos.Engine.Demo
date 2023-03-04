@@ -22,8 +22,6 @@
         private List<TextureComponent> _contentBasedPauseMenuComponents;
 
         private GraphicsDevice _graphics;
-        private InputManager _inputManager;
-        private LevelManager _tmxManager;
 
         private MenuTypes _prevMenuType;
 
@@ -33,8 +31,6 @@
 
         public MenuController(GameServiceContainer services)
         {
-            _inputManager = services.GetService<InputManager>();
-            _tmxManager = services.GetService<LevelManager>();
             var contentManager = services.GetService<ContentManager>();
             _graphics = contentManager.GetGraphicsDevice();
 
@@ -110,7 +106,7 @@
             var positionB = new Vector2(160, 123);
             var positionC = new Vector2(160, 148);
 
-            var buttonA = new Button(_startMenuButtonTexture, _buttonFont, _inputManager)
+            var buttonA = new Button(_startMenuButtonTexture, _buttonFont)
             {
                 Text = _buttonText1,
                 Position = positionA,
@@ -191,7 +187,7 @@
                 },
             };
 
-            var proceduralButtonA = new ProceduralButton(_graphics, _buttonFont, _inputManager, new Rectangle(160, 98, 159, 22))
+            var proceduralButtonA = new ProceduralButton(_graphics, _buttonFont, new Rectangle(160, 98, 159, 22))
             {
                 Text = _buttonText1,
                 UseFontShading = true,
@@ -228,14 +224,14 @@
 
         private void StartLevelOne_Click(object sender, EventArgs e)
         {
-            _tmxManager.LoadMap("Level1");
+            LevelManager.LoadMap("Level1");
             IsActive = false;
             LudosGame.GameStates[States.Game].IsActive = true;
         }
 
         private void StartLevelTwo_Click(object sender, EventArgs e)
         {
-            _tmxManager.LoadMap("Level3");
+            LevelManager.LoadMap("Level3");
             IsActive = false;
             LudosGame.GameStates[States.Game].IsActive = true;
         }

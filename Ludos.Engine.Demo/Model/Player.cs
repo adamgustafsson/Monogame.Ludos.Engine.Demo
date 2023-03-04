@@ -7,8 +7,8 @@
 
     public class Player : LudosPlayer
     {
-        public Player(Vector2 position, Point size, LevelManager tmxManager, InputManager inputManager)
-            : base(position, size, tmxManager, inputManager)
+        public Player(Vector2 position, Point size)
+            : base(position, size)
         {
         }
     }

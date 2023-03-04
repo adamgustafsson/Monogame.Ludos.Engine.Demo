@@ -19,8 +19,6 @@
     {
         private readonly LudosPlayer _player;
         private readonly Camera2D _camera;
-        private readonly InputManager _inputManager;
-        private readonly LevelManager _tmxManager;
         private readonly SoundManager _soundManager;
         private readonly DebugManager _debugManager;
 
@@ -52,8 +50,6 @@
 
             LoadContent(contentManager);
 
-            _inputManager = services.GetService<InputManager>();
-            _tmxManager = services.GetService<LevelManager>();
             _animationManager = new AnimationManager(_camera, SetUpPlayerAnimations());
             _particleManager = new ParticleManager(graphicsDevice, _camera, SetUpParticles());
             _debugManager = new DebugManager(services, _camera, _player, _debugToolFont);
@@ -97,7 +93,7 @@
 
         public void Update(GameTime gameTime)
         {
-            if (_inputManager.IsInputDown(InputName.Pause) && _inputManager.GetPreviousKeyboardState().IsKeyUp(_inputManager.UserControls[InputName.Pause].Key))
+            if (InputManager.IsInputDown(InputName.Pause) && InputManager.GetPreviousKeyboardState().IsKeyUp(InputManager.UserControls[InputName.Pause].Key))
             {
                 LudosGame.GameIsPaused = !LudosGame.GameIsPaused;
             }
@@ -116,7 +112,7 @@
 
             LudosGame.GameStates[States.Menu].IsActive = LudosGame.GameIsPaused;
 
-            if (_tmxManager.CurrentMapName == "Level3" && !LudosGame.GameIsPaused)
+            if (LevelManager.CurrentMapName == "Level3" && !LudosGame.GameIsPaused)
             {
                 _animationManager.Update(gameTime);
                 _soundManager.PlaySoundTrack("Arcade-Heroes");
@@ -137,7 +133,7 @@
 
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            if (_tmxManager.CurrentMapName != "Level3")
+            if (LevelManager.CurrentMapName != "Level3")
             {
                 spriteBatch.Draw(_staticBackground, Vector2.Zero, Color.White);
             }
@@ -155,11 +151,10 @@
 
             foreach (var crate in _gameModel.Crates)
             {
-                spriteBatch.Draw(_tmxManager.CurrentMapName != "Level3" ? _coreBoxTexture : _boxTexture, _camera.VisualizeCordinates(crate.Bounds), Color.White);
+                spriteBatch.Draw(LevelManager.CurrentMapName != "Level3" ? _coreBoxTexture : _boxTexture, _camera.VisualizeCordinates(crate.Bounds), Color.White);
             }
 
-
-            if (_tmxManager.CurrentMapName != "Level3")
+            if (LevelManager.CurrentMapName != "Level3")
             {
                 var ptexture = _player.Bounds.Height <= 16 ? _playerTexture16x16 : (_player.Bounds.Height > 24 ? _playerTexture16x32 : _playerTexture16x24);
                 spriteBatch.Draw(ptexture, _camera.VisualizeCordinates(_player.Bounds), Color.White);
@@ -179,11 +174,11 @@
 
         private void DrawTmxMap(SpriteBatch spriteBatch)
         {
-            _tmxManager.DrawTileLayers(spriteBatch, _camera.CameraBounds, 0f);
+            LevelManager.DrawTileLayers(spriteBatch, _camera.CameraBounds, 0f);
 
-            foreach (var platform in _tmxManager.MovingPlatforms)
+            foreach (var platform in LevelManager.MovingPlatforms)
             {
-                if (_tmxManager.CurrentMapName == "Level3")
+                if (LevelManager.CurrentMapName == "Level3")
                 {
                     spriteBatch.Draw(_platform, _camera.VisualizeCordinates(platform.Bounds), Color.White);
                 }
@@ -214,7 +209,7 @@
                 },
                 { Actor.State.Jumping, new Animation(_playerSprite, _player, startFrame: new Point(2, 3), playerSpriteFrameSize, frameCount: 1, scale: 1.5f) },
                 { Actor.State.Falling, new Animation(_playerSprite, _player, startFrame: new Point(3, 3), playerSpriteFrameSize, frameCount: 1, scale: 1.5f) },
-                { Actor.State.WallClinging, new Animation(_playerSprite, _player, startFrame: new Point(4, 3), playerSpriteFrameSize, frameCount: 1, scale: 1.5f)},
+                { Actor.State.WallClinging, new Animation(_playerSprite, _player, startFrame: new Point(4, 3), playerSpriteFrameSize, frameCount: 1, scale: 1.5f) },
                 { Actor.State.Climbing, new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 2, scale: 1.5f) },
                 { Actor.State.ClimbingIdle, new Animation(_playerSprite, _player, startFrame: new Point(0, 3), playerSpriteFrameSize, frameCount: 1, scale: 1.5f) },
                 { Actor.State.Swimming, new Animation(_playerSprite, _player, startFrame: new Point(5, 3), playerSpriteFrameSize, frameCount: 2, scale: 1.5f) { FrameSpeed = 0.5f } },
@@ -224,7 +219,7 @@
 
         private List<ParticleSystemDefinition> SetUpParticles()
         {
-            var particlePositions = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerParticles, _tmxManager.GetCurrentMapBounds()).Where(x => x.Type == "torch").Select(x => x.Bounds.Center.ToVector2() - new Vector2(1, 0.5f)).ToList();
+            var particlePositions = LevelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerParticles, LevelManager.GetCurrentMapBounds()).Where(x => x.Type == "torch").Select(x => x.Bounds.Center.ToVector2() - new Vector2(1, 0.5f)).ToList();
 
             var fireParticleSystemDef = new ParticleSystemDefinition
             {

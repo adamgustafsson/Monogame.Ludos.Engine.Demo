@@ -9,7 +9,6 @@
 
     public class GameController : IGameState
     {
-        private readonly LevelManager _tmxManager;
         private readonly LudosPlayer _player;
         private string _currentMap;
         private View.GameView _gameView;
@@ -19,11 +18,10 @@
         public GameController(GameServiceContainer services)
         {
             _services = services;
-            _tmxManager = _services.GetService<LevelManager>();
 
             var startPos = new Vector2(100, 100);
 
-            _player = new LudosPlayer(startPos, new Point(16, 16), _services)
+            _player = new LudosPlayer(startPos, new Point(16, 16))
             {
                 HorizontalAcceleration = 0.035f,
             };
@@ -35,17 +33,17 @@
             _player.AdditionalCollisionObjects = _gameModel.Crates;
 
             _gameView = new View.GameView(_services, _player, _gameModel);
-            _currentMap = _tmxManager.CurrentMapName;
+            _currentMap = LevelManager.CurrentMapName;
         }
 
         public bool IsActive { get; set; }
 
         public void Update(GameTime gameTime)
         {
-            if (_currentMap != _tmxManager.CurrentMapName)
+            if (_currentMap != LevelManager.CurrentMapName)
             {
                 _player.ResetToStartPosition();
-                _currentMap = _tmxManager.CurrentMapName;
+                _currentMap = LevelManager.CurrentMapName;
                 _gameView = new View.GameView(_services, _player, _gameModel);
             }
 

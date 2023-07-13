@@ -241,18 +241,6 @@
 /processorParam:TextureFormat=Color
 /build:Assets/Player/Idle.png
 
-#begin Assets/Player/player-spritesheet.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Assets/Player/player-spritesheet.png
-
 #begin Assets/Player/player-spritesheet-large.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -264,6 +252,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Assets/Player/player-spritesheet-large.png
+
+#begin Assets/Player/player-spritesheet.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Assets/Player/player-spritesheet.png
 
 #begin Assets/Player/run-left.png
 /importer:TextureImporter
@@ -347,6 +347,13 @@
 #begin Fonts/pixel.ttf
 /copy:Fonts/pixel.ttf
 
+#begin Fonts/Segoe.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/Segoe.spritefont
+
 #begin Fonts/seguibl.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
@@ -359,9 +366,6 @@
 
 #begin Levels/Level1/Level1.tmx
 /copy:Levels/Level1/Level1.tmx
-
-#begin Levels/Level1/map1.tmx
-/copy:Levels/Level1/map1.tmx
 
 #begin Levels/Level1/TileImages/background.png
 /importer:TextureImporter

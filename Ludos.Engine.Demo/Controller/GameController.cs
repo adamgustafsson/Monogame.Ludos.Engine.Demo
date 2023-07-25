@@ -1,11 +1,11 @@
 ﻿namespace LudosEngineDemo
 {
+    using System.Collections.Generic;
     using Ludos.Engine.Actors;
     using Ludos.Engine.Core;
     using Ludos.Engine.Level;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
-    using System.Collections.Generic;
 
     public class GameController : IGameState
     {

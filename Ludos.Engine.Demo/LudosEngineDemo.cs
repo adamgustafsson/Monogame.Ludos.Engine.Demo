@@ -48,9 +48,10 @@
                 };
 
             InitializeGameServices(tmxMapInfoList, userControls);
+
             GameStates = new IGameState[]
             {
-                new GameController(Services), //{ IsActive = true },
+                new GameController(Services),
                 new MenuController(Services) { IsActive = true },
             };
 
